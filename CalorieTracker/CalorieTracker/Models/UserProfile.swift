@@ -99,7 +99,7 @@ final class UserProfile {
         hasCompletedOnboarding: Bool = false,
         waterGoalMl: Int = 2000,
         weeklyExerciseGoalMinutes: Int = 150,
-        appearance: AppearanceMode = .system
+        appearance: AppearanceMode = .light
     ) {
         self.id = UUID()
         self.heightCm = heightCm

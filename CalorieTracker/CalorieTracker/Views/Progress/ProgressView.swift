@@ -249,14 +249,10 @@ struct ProgressTabView: View {
 
     private var streakCard: some View {
         HStack(spacing: 14) {
-            Circle()
-                .fill(Theme.exercise.opacity(0.15))
+            Image(systemName: "flame.fill")
+                .font(.system(size: 26, weight: .semibold))
+                .foregroundStyle(Theme.exercise)
                 .frame(width: 48, height: 48)
-                .overlay(
-                    Image(systemName: "flame.fill")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundStyle(Theme.exercise)
-                )
             VStack(alignment: .leading, spacing: 2) {
                 HStack(alignment: .lastTextBaseline, spacing: 4) {
                     Text("\(loggingStreak)")
@@ -446,10 +442,10 @@ struct ProgressTabView: View {
                         Text("\(String(format: "%.1f", abs(weightDelta))) kg")
                             .font(Theme.Font.text(12, weight: .semibold))
                     }
-                    .foregroundStyle(Theme.secondary)
+                    .foregroundStyle(Theme.weight)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
-                    .background(Theme.secondarySoft, in: Capsule())
+                    .background(Theme.weightSoft, in: Capsule())
                 }
             }
 
@@ -470,7 +466,7 @@ struct ProgressTabView: View {
                                 if index == 0 { path.move(to: CGPoint(x: x, y: y)) } else { path.addLine(to: CGPoint(x: x, y: y)) }
                             }
                         }
-                        .stroke(Theme.secondary, lineWidth: 2)
+                        .stroke(Theme.weight, lineWidth: 2)
 
                         Path { path in
                             path.move(to: CGPoint(x: 0, y: geo.size.height))
@@ -483,7 +479,7 @@ struct ProgressTabView: View {
                             path.closeSubpath()
                         }
                         .fill(
-                            LinearGradient(colors: [Theme.secondary.opacity(0.18), Theme.secondary.opacity(0)], startPoint: .top, endPoint: .bottom)
+                            LinearGradient(colors: [Theme.weight.opacity(0.18), Theme.weight.opacity(0)], startPoint: .top, endPoint: .bottom)
                         )
                     }
 
@@ -491,7 +487,7 @@ struct ProgressTabView: View {
                         let x = weights.count > 1 ? geo.size.width * CGFloat(index) / CGFloat(weights.count - 1) : geo.size.width / 2
                         let y = geo.size.height * (1 - CGFloat((entry.weightKg - wMin) / range))
                         Circle()
-                            .fill(Theme.secondary)
+                            .fill(Theme.weight)
                             .frame(width: 7, height: 7)
                             .position(x: x, y: y)
                     }

@@ -128,20 +128,20 @@ struct WeightWidgetCard: View {
                 lineAreaPath(geo: geo, plotHeight: plotHeight)
                     .fill(
                         LinearGradient(
-                            colors: [Theme.secondary.opacity(0.35), Theme.secondary.opacity(0.02)],
+                            colors: [Theme.weight.opacity(0.35), Theme.weight.opacity(0.02)],
                             startPoint: .top, endPoint: .bottom
                         )
                     )
 
                 linePath(geo: geo, plotHeight: plotHeight)
-                    .stroke(Theme.secondaryGradient, style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
+                    .stroke(Theme.weightGradient, style: StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
 
                 ForEach(Array(weights.enumerated()), id: \.offset) { index, entry in
                     let x = geo.size.width * CGFloat(index) / CGFloat(max(1, weights.count - 1))
                     let y = plotY(entry.weightKg, plotHeight: plotHeight)
 
                     Circle()
-                        .fill(Theme.secondary)
+                        .fill(Theme.weight)
                         .frame(width: 6, height: 6)
                         .position(x: x, y: y)
                 }

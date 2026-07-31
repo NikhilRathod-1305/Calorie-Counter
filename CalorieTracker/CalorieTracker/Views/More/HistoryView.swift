@@ -76,20 +76,20 @@ private enum LogItem: Identifiable {
         }
     }
 
-    var icon: String {
+    var emoji: String {
         switch self {
-        case .meal: return "fork.knife"
-        case .exercise: return "figure.run"
-        case .weight: return "scalemass.fill"
-        case .water: return "drop.fill"
+        case .meal(let e): return e.mealType.emoji
+        case .exercise: return "🏃"
+        case .weight: return "⚖️"
+        case .water: return "💧"
         }
     }
 
     var iconColor: Color {
         switch self {
-        case .meal: return Theme.accent
+        case .meal: return Theme.secondary
         case .exercise: return Theme.exercise
-        case .weight: return Theme.steps
+        case .weight: return Theme.weight
         case .water: return Theme.water
         }
     }
@@ -320,14 +320,9 @@ struct HistoryView: View {
             onDelete: { delete(item) }
         ) {
             HStack(spacing: 12) {
-                Circle()
-                    .fill(item.iconColor.opacity(0.15))
+                Text(item.emoji)
+                    .font(.system(size: 20))
                     .frame(width: 36, height: 36)
-                    .overlay(
-                        Image(systemName: item.icon)
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(item.iconColor)
-                    )
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(item.title)

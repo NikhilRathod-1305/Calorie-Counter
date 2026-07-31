@@ -17,12 +17,12 @@ struct QuickLogSheet: View {
         BottomSheetContainer(title: "Quick Log", subtitle: "Choose an entry type", onClose: onClose) {
             GlassEffectContainer(spacing: 10) {
                 LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
-                    tile(icon: "fork.knife", label: "Log Food", color: Theme.steps) { activeMode = .browse }
-                    tile(icon: "barcode.viewfinder", label: "Barcode Scan", color: Theme.accent) { activeMode = .barcode }
-                    tile(icon: "mic.fill", label: "Voice Log", color: Theme.exercise) { activeMode = .voice }
-                    tile(icon: "camera.fill", label: "Scan Meal", color: Theme.textSecondary) { activeMode = .scan }
-                    tile(icon: "drop.fill", label: "Water", color: Theme.water) { showingWater = true }
-                    tile(icon: "flame.fill", label: "Workout", color: Theme.exercise) { showingWorkout = true }
+                    emojiTile(emoji: "🍽️", label: "Log Food", color: Theme.secondary) { activeMode = .browse }
+                    tile(icon: "barcode.viewfinder", label: "Barcode Scan", color: Theme.secondary) { activeMode = .barcode }
+                    emojiTile(emoji: "🎙️", label: "Voice Log", color: Theme.secondary) { activeMode = .voice }
+                    emojiTile(emoji: "📸", label: "Scan Meal", color: Theme.secondary) { activeMode = .scan }
+                    emojiTile(emoji: "💧", label: "Water", color: Theme.water) { showingWater = true }
+                    emojiTile(emoji: "🏃", label: "Workout", color: Theme.exercise) { showingWorkout = true }
                 }
             }
             .padding(.bottom, 8)
@@ -70,14 +70,28 @@ struct QuickLogSheet: View {
     private func tile(icon: String, label: String, color: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(spacing: 10) {
-                Circle()
-                    .fill(color.opacity(0.15))
+                Image(systemName: icon)
+                    .font(.system(size: 22, weight: .semibold))
+                    .foregroundStyle(color)
                     .frame(width: 44, height: 44)
-                    .overlay(
-                        Image(systemName: icon)
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(color)
-                    )
+                Text(label)
+                    .font(Theme.Font.text(13, weight: .medium))
+                    .foregroundStyle(Theme.textPrimary)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 20)
+            .glassCardAlt(RoundedRectangle(cornerRadius: Theme.Radius.medium))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func emojiTile(emoji: String, label: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 10) {
+                Text(emoji)
+                    .font(.system(size: 28))
+                    .frame(width: 44, height: 44)
                 Text(label)
                     .font(Theme.Font.text(13, weight: .medium))
                     .foregroundStyle(Theme.textPrimary)

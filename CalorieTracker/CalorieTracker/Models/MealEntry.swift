@@ -92,10 +92,10 @@ enum MealType: String, Codable, CaseIterable {
 
     var emoji: String {
         switch self {
-        case .breakfast: return "☀️"
-        case .lunch: return "🌤️"
-        case .dinner: return "🌙"
-        case .snack: return "⚡"
+        case .breakfast: return "🥞"
+        case .lunch: return "🥗"
+        case .dinner: return "🍝"
+        case .snack: return "🥑"
         }
     }
 

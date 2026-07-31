@@ -6,34 +6,45 @@ struct HomeDashboardView: View {
     @Query(sort: \MealEntry.timestamp) private var allEntries: [MealEntry]
     @Query private var profiles: [UserProfile]
     @Query(sort: \ExerciseEntry.timestamp) private var exerciseEntries: [ExerciseEntry]
-    @Query(sort: \WeightLogEntry.date) private var weightEntries: [WeightLogEntry]
 
-    @State private var showingGoals = false
-    @State private var showingLogWeight = false
+    @State private var viewedDate: Date = Calendar.current.startOfDay(for: Date())
+    @State private var sheetMealType: MealType?
+    @State private var editingMealEntry: MealEntry?
+    @State private var toastMessage: String?
 
+    private var isToday: Bool { Calendar.current.isDateInToday(viewedDate) }
     private var profile: UserProfile { profiles.first ?? UserProfile() }
     private var goals: DailyGoals { NutritionGoalCalculator.compute(profile: profile) }
 
-    private var todaysEntries: [MealEntry] {
+    private var viewedEntries: [MealEntry] {
         let cal = Calendar.current
-        return allEntries.filter { cal.isDateInToday($0.timestamp) }
+        return allEntries.filter { cal.isDate($0.timestamp, inSameDayAs: viewedDate) }
     }
 
-    private var todaysExercise: [ExerciseEntry] {
+    private var viewedExercise: [ExerciseEntry] {
         let cal = Calendar.current
-        return exerciseEntries.filter { cal.isDateInToday($0.timestamp) }
+        return exerciseEntries.filter { cal.isDate($0.timestamp, inSameDayAs: viewedDate) }
     }
 
     private var totals: NutritionValues {
-        todaysEntries.reduce(NutritionValues.zero) { $0 + $1.nutrition }
+        viewedEntries.reduce(NutritionValues.zero) { $0 + $1.nutrition }
     }
 
     private var exerciseCaloriesBurned: Int {
-        Int(todaysExercise.reduce(0) { $0 + $1.caloriesBurned })
+        Int(viewedExercise.reduce(0) { $0 + $1.caloriesBurned })
     }
 
-    private var recentWeights: [WeightLogEntry] {
-        Array(weightEntries.suffix(8))
+    private func entries(for meal: MealType) -> [MealEntry] {
+        viewedEntries.filter { $0.mealType == meal }.sorted { $0.timestamp < $1.timestamp }
+    }
+
+    private func calorieProgress(for day: Date) -> Double {
+        let cal = Calendar.current
+        let dayCalories = allEntries
+            .filter { cal.isDate($0.timestamp, inSameDayAs: day) }
+            .reduce(0.0) { $0 + $1.nutrition.calories }
+        guard goals.calorieGoal > 0 else { return 0 }
+        return min(1, dayCalories / Double(goals.calorieGoal))
     }
 
     var body: some View {
@@ -42,53 +53,158 @@ struct HomeDashboardView: View {
                 AppTopBar()
 
                 ScrollView {
-                    GlassEffectContainer(spacing: 16) {
+                    VStack(spacing: 16) {
+                        DateStripPicker(selectedDate: $viewedDate, progress: calorieProgress)
+
                         VStack(spacing: 16) {
                             CalorieRingCard(
                                 baseGoal: goals.calorieGoal,
                                 food: Int(totals.calories),
                                 exercise: exerciseCaloriesBurned,
-                                onEdit: { showingGoals = true }
+                                carbs: totals.carbs,
+                                carbGoal: goals.carbG,
+                                protein: totals.protein,
+                                proteinGoal: goals.proteinG,
+                                fat: totals.fat,
+                                fatGoal: goals.fatG
                             )
 
-                            StepsWidgetCard()
-
-                            WaterWidgetCard()
-
-                            WeightWidgetCard(
-                                currentWeightKg: profile.weightKg,
-                                targetWeightKg: profile.targetWeightKg,
-                                recentEntries: recentWeights,
-                                onLogWeight: { showingLogWeight = true }
-                            )
+                            ForEach(MealType.allCases.sorted { $0.sortOrder < $1.sortOrder }, id: \.self) { meal in
+                                mealSection(meal)
+                            }
 
                             Color.clear.frame(height: 100)
                         }
+                        .padding(.horizontal, 16)
                     }
-                    .padding(.horizontal, 16)
                     .padding(.top, 12)
                 }
                 .background(Theme.groupedBackground.ignoresSafeArea())
             }
             .navigationBarHidden(true)
-            .navigationDestination(isPresented: $showingGoals) {
-                GoalsSettingsView()
-            }
         }
-        .sheet(isPresented: $showingLogWeight) {
-            LogWeightSheet(
-                initialWeight: profile.weightKg,
-                onClose: { showingLogWeight = false },
-                onSave: { newWeight, date in
-                    profile.weightKg = newWeight
-                    modelContext.insert(WeightLogEntry(weightKg: newWeight, date: date))
-                    try? modelContext.save()
-                    showingLogWeight = false
+        .toast(toastMessage)
+        .sheet(item: $sheetMealType) { meal in
+            LogFoodSheet(
+                initialMode: .browse,
+                mealType: meal,
+                onClose: { sheetMealType = nil },
+                onAdded: {
+                    sheetMealType = nil
+                    showToast("Added to \(meal.rawValue)")
                 }
             )
-            .presentationDetents([.height(260)])
+            .presentationDetents([.large])
+            .presentationDragIndicator(.hidden)
+            .presentationBackground(.clear)
+        }
+        .sheet(item: $editingMealEntry) { entry in
+            LogFoodSheet(
+                initialMode: .browse,
+                mealType: entry.mealType,
+                editingEntry: entry,
+                onClose: { editingMealEntry = nil },
+                onAdded: {
+                    editingMealEntry = nil
+                    showToast("Updated")
+                }
+            )
+            .presentationDetents([.large])
             .presentationDragIndicator(.hidden)
             .presentationBackground(.clear)
         }
     }
+
+    private func showToast(_ message: String) {
+        withAnimation { toastMessage = message }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.6) {
+            withAnimation { toastMessage = nil }
+        }
+    }
+
+    private func deleteMealEntry(_ entry: MealEntry) {
+        modelContext.delete(entry)
+        try? modelContext.save()
+    }
+
+    // MARK: Meal list
+
+    private func servingLabel(for entry: MealEntry) -> String {
+        if let food = entry.foodItem {
+            let ratio = entry.quantity / food.servingSize
+            let servings = ratio == ratio.rounded() ? "\(Int(ratio))" : String(format: "%.1f", ratio)
+            return "\(servings) × \(Int(food.servingSize))\(food.servingUnit)"
+        }
+        return "\(Int(entry.quantity))g"
+    }
+
+    private func mealSection(_ meal: MealType) -> some View {
+        let mealEntries = entries(for: meal)
+        let mealTotal = mealEntries.reduce(0.0) { $0 + $1.nutrition.calories }
+
+        return VStack(spacing: 0) {
+            HStack(spacing: 12) {
+                Text(meal.emoji)
+                    .font(.system(size: 32))
+                    .frame(width: 48, height: 48)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(meal.rawValue)
+                        .font(Theme.Font.text(15, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(mealEntries.isEmpty ? "No entries yet" : "\(Int(mealTotal)) kcal")
+                        .font(Theme.Font.text(12))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+
+                Spacer()
+
+                Button {
+                    sheetMealType = meal
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(Theme.onAccent)
+                        .frame(width: 36, height: 36)
+                        .background(Theme.accent, in: Circle())
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(14)
+
+            if !mealEntries.isEmpty {
+                Divider().overlay(Theme.hairline)
+                ForEach(mealEntries) { entry in
+                    SwipeToDeleteRow(
+                        onTap: { editingMealEntry = entry },
+                        onDelete: { deleteMealEntry(entry) }
+                    ) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(entry.displayName)
+                                    .font(Theme.Font.text(13))
+                                    .foregroundStyle(Theme.textPrimary)
+                                Text(servingLabel(for: entry))
+                                    .font(Theme.Font.text(11))
+                                    .foregroundStyle(Theme.textTertiary)
+                            }
+                            Spacer()
+                            Text("\(Int(entry.nutrition.calories)) cal")
+                                .font(Theme.Font.text(12))
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .contentShape(Rectangle())
+                    }
+                    Divider().overlay(Theme.hairline.opacity(0.6)).padding(.leading, 14)
+                }
+            }
+        }
+        .glassCard(RoundedRectangle(cornerRadius: Theme.Radius.medium))
+    }
+}
+
+extension MealType: Identifiable {
+    public var id: String { rawValue }
 }

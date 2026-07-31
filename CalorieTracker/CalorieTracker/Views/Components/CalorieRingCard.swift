@@ -4,7 +4,12 @@ struct CalorieRingCard: View {
     let baseGoal: Int
     let food: Int
     let exercise: Int
-    let onEdit: () -> Void
+    let carbs: Double
+    let carbGoal: Int
+    let protein: Double
+    let proteinGoal: Int
+    let fat: Double
+    let fatGoal: Int
 
     private var remaining: Int { max(0, baseGoal - food + exercise) }
     private var progress: Double {
@@ -15,69 +20,73 @@ struct CalorieRingCard: View {
     }
 
     var body: some View {
-        VStack(spacing: 18) {
-            HStack {
-                Text("CALORIES REMAINING")
-                    .font(Theme.Font.text(11, weight: .semibold))
-                    .foregroundStyle(Theme.textSecondary)
-                    .tracking(0.5)
-                Spacer()
-                Button(action: onEdit) {
-                    Text("Edit")
-                        .font(Theme.Font.text(13, weight: .semibold))
-                        .foregroundStyle(Theme.accent)
+        VStack(spacing: 24) {
+            HStack(alignment: .center, spacing: 0) {
+                statColumn(value: food, label: "Eaten")
+
+                ZStack {
+                    SemicircleGaugeView(progress: progress, lineWidth: 12)
+
+                    VStack(spacing: 2) {
+                        Text("\(remaining)")
+                            .font(Theme.Font.display(28))
+                            .foregroundStyle(Theme.textPrimary)
+                            .minimumScaleFactor(0.6)
+                        Text("kcal left")
+                            .font(Theme.Font.text(12))
+                            .foregroundStyle(Theme.textSecondary)
+                    }
                 }
-                .buttonStyle(.plain)
+                .frame(width: 160, height: 160)
+                .padding(.horizontal, 8)
+
+                statColumn(value: exercise, label: "Burned")
             }
 
-            ZStack {
-                Circle()
-                    .stroke(Theme.hairline, lineWidth: 12)
-                Circle()
-                    .trim(from: 0, to: progress)
-                    .stroke(Theme.accentGradient, style: StrokeStyle(lineWidth: 12, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-
-                VStack(spacing: 2) {
-                    Text("\(remaining)")
-                        .font(Theme.Font.display(36))
-                        .foregroundStyle(Theme.textPrimary)
-                        .minimumScaleFactor(0.6)
-                    Text("kcal")
-                        .font(Theme.Font.text(11))
-                        .foregroundStyle(Theme.textSecondary)
-                }
+            HStack(alignment: .top, spacing: 20) {
+                macroColumn(label: "Carbs", value: carbs, goal: carbGoal)
+                macroColumn(label: "Protein", value: protein, goal: proteinGoal)
+                macroColumn(label: "Fat", value: fat, goal: fatGoal)
             }
-            .frame(width: 170, height: 170)
-
-            HStack {
-                statColumn(label: "Base Goal", value: baseGoal, color: Theme.textSecondary)
-                Spacer(minLength: 0)
-                statColumn(label: "Food", icon: "fork.knife", value: food, color: Theme.accent)
-                Spacer(minLength: 0)
-                statColumn(label: "Burn", icon: "flame.fill", value: exercise, color: Theme.exercise)
-            }
-            .padding(.horizontal, 4)
         }
+        .frame(maxWidth: .infinity)
         .padding(20)
         .glassCard(RoundedRectangle(cornerRadius: Theme.Radius.large))
     }
 
-    private func statColumn(label: String, icon: String? = nil, value: Int, color: Color) -> some View {
+    private func statColumn(value: Int, label: String) -> some View {
         VStack(spacing: 4) {
-            HStack(spacing: 4) {
-                if let icon {
-                    Image(systemName: icon)
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(color)
-                }
-                Text(label)
-                    .font(Theme.Font.text(11))
-                    .foregroundStyle(Theme.textTertiary)
-            }
             Text("\(value)")
-                .font(Theme.Font.text(16, weight: .semibold))
-                .foregroundStyle(color == Theme.textSecondary ? Theme.textPrimary : color)
+                .font(Theme.Font.display(22))
+                .foregroundStyle(Theme.textPrimary)
+            Text(label)
+                .font(Theme.Font.text(13))
+                .foregroundStyle(Theme.textSecondary)
         }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func macroColumn(label: String, value: Double, goal: Int) -> some View {
+        VStack(spacing: 8) {
+            Text(label)
+                .font(Theme.Font.text(13))
+                .foregroundStyle(Theme.textSecondary)
+
+            RoundedRectangle(cornerRadius: 3)
+                .fill(Theme.hairline)
+                .frame(height: 6)
+                .overlay(alignment: .leading) {
+                    GeometryReader { geo in
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(Theme.accent)
+                            .frame(width: geo.size.width * min(1, value / Double(max(1, goal))))
+                    }
+                }
+
+            Text("\(Int(value))/\(goal) g")
+                .font(Theme.Font.text(12))
+                .foregroundStyle(Theme.textPrimary)
+        }
+        .frame(maxWidth: .infinity)
     }
 }

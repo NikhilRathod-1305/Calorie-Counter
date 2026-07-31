@@ -2,59 +2,67 @@ import SwiftUI
 import UIKit
 
 enum Theme {
-    // MARK: Backgrounds (deep space-black surface system for a liquid-glass look)
-    static let background = Color(light: 0xFFF8F6, dark: 0x0A0D12)
-    static let groupedBackground = Color(light: 0xFBF4F1, dark: 0x0A0D12)
-    static let cardBackground = Color(light: 0xFFFFFF, dark: 0x151A21)
-    static let cardBackgroundAlt = Color(light: 0xF3ECE8, dark: 0x11151B)
+    // MARK: Backgrounds
+    static let background = Color(light: 0xF6F8F6, dark: 0x0E1512)
+    static let groupedBackground = Color(light: 0xF1F4F1, dark: 0x0E1512)
+    static let cardBackground = Color(light: 0xFFFFFF, dark: 0x18211C)
+    static let cardBackgroundAlt = Color(light: 0xF4F7F4, dark: 0x141C18)
 
     // MARK: Text
-    static let textPrimary = Color(light: 0x1F1B18, dark: 0xF2F4F8)
-    static let textSecondary = Color(light: 0x1F1B18, dark: 0xF2F4F8, opacity: 0.62)
-    static let textTertiary = Color(light: 0x1F1B18, dark: 0xFFB98C, opacity: 0.75)
-    static let textFaint = Color(light: 0x1F1B18, dark: 0xF2F4F8, opacity: 0.30)
+    static let textPrimary = Color(light: 0x14231A, dark: 0xEAF2ED)
+    static let textSecondary = Color(light: 0x14231A, dark: 0xEAF2ED, opacity: 0.62)
+    static let textTertiary = Color(light: 0x4A5A50, dark: 0xEAF2ED, opacity: 0.55)
+    static let textFaint = Color(light: 0x14231A, dark: 0xEAF2ED, opacity: 0.32)
 
     // MARK: Lines / separators
-    static let hairline = Color(light: 0xA98A7D, dark: 0xFF6B00, opacity: 0.18)
-    static let separator = Color(light: 0xA98A7D, dark: 0xFF6B00, opacity: 0.25)
+    static let hairline = Color(light: 0x1F3D2C, dark: 0x4CAF50, opacity: 0.14)
+    static let separator = Color(light: 0x1F3D2C, dark: 0x4CAF50, opacity: 0.20)
 
-    // MARK: Accent (vivid primary orange)
-    static let accent = Color(light: 0xA04100, dark: 0xFF6B00)
-    static let accentSoft = Color(light: 0xA04100, dark: 0xFF6B00, opacity: 0.16)
-    static let onAccent = Color(light: 0xFFFFFF, dark: 0x2E1300)
+    // MARK: Accent (primary green — brand color)
+    static let accent = Color(light: 0x2FA84F, dark: 0x4CD46B)
+    static let accentSoft = Color(light: 0x2FA84F, dark: 0x4CD46B, opacity: 0.14)
+    static let onAccent = Color(light: 0xFFFFFF, dark: 0x06210E)
 
     static let accentGradient = LinearGradient(
-        colors: [Color(hex: 0xFF6B00), Color(hex: 0xFFB693)],
+        colors: [Color(hex: 0x4CD46B), Color(hex: 0x2FA84F)],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
 
-    // MARK: Secondary (electric cyan — data viz / trend accent)
-    static let secondary = Color(light: 0x0090A0, dark: 0x00F0FF)
-    static let secondarySoft = Color(light: 0x0090A0, dark: 0x00F0FF, opacity: 0.16)
-    static let onSecondary = Color(light: 0xFFFFFF, dark: 0x00343A)
+    // MARK: Secondary (warm orange — calories / food / energy)
+    static let secondary = Color(light: 0xFF8A34, dark: 0xFF9A4D)
+    static let secondarySoft = Color(light: 0xFF8A34, dark: 0xFF9A4D, opacity: 0.14)
+    static let onSecondary = Color(light: 0xFFFFFF, dark: 0x2E1600)
 
     static let secondaryGradient = LinearGradient(
-        colors: [Color(hex: 0x00F0FF), Color(hex: 0x0090A0)],
+        colors: [Color(hex: 0xFFA95C), Color(hex: 0xFF7A1A)],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
 
-    // MARK: Macro colors (Stitch secondary/tertiary/primary triad)
-    static let proteinColor = Color(light: 0x0090A0, dark: 0x00F0FF)
-    static let carbColor = Color(light: 0xC0392B, dark: 0xFFB4AA)
-    static let fatColor = Color(light: 0xA04100, dark: 0xFF6B00)
+    // MARK: Macro colors
+    static let proteinColor = Color(light: 0x2F7CE0, dark: 0x5B9CFF)
+    static let carbColor = Color(light: 0xFF8A34, dark: 0xFF9A4D)
+    static let fatColor = Color(light: 0xE0435A, dark: 0xFF6B80)
 
     // MARK: Feature accents
-    static let steps = Color(light: 0x0090A0, dark: 0x00F0FF)
-    static let water = Color(light: 0x1550A0, dark: 0x4B8EFF)
-    static let onWater = Color(light: 0xFFFFFF, dark: 0x00285C)
-    static let exercise = Color(light: 0x9A2A20, dark: 0xFF6B00)
+    static let steps = Color(light: 0xFF8A34, dark: 0xFF9A4D)
+    static let water = Color(light: 0x2F9CE0, dark: 0x4FB6F5)
+    static let onWater = Color(light: 0xFFFFFF, dark: 0x00263B)
+    static let exercise = Color(light: 0xFF8A34, dark: 0xFF9A4D)
+    static let weight = Color(light: 0x2F7CE0, dark: 0x5B9CFF)
+    static let weightSoft = Color(light: 0x2F7CE0, dark: 0x5B9CFF, opacity: 0.14)
+
+    static let weightGradient = LinearGradient(
+        colors: [Color(hex: 0x5B9CFF), Color(hex: 0x2F7CE0)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
 
     // MARK: Status
-    static let success = Color(light: 0x1FBF7A, dark: 0x3AD98F)
+    static let success = Color(light: 0x2FA84F, dark: 0x4CD46B)
     static let warning = Color(light: 0xE0A430, dark: 0xF0B840)
-    static let danger = Color(light: 0x93000A, dark: 0xFFB4AB)
+    static let danger = Color(light: 0xE0435A, dark: 0xFF6B80)
 
     enum Font {
         static func display(_ size: CGFloat, weight: SwiftUI.Font.Weight = .bold) -> SwiftUI.Font {
@@ -67,22 +75,27 @@ enum Theme {
 
     enum Radius {
         static let small: CGFloat = 8
-        static let medium: CGFloat = 12
-        static let large: CGFloat = 16
-        static let sheet: CGFloat = 20
+        static let medium: CGFloat = 14
+        static let large: CGFloat = 20
+        static let sheet: CGFloat = 24
     }
 }
 
 extension View {
-    /// Liquid Glass card surface — replaces a flat `Theme.cardBackground` fill with real
-    /// iOS 26 glass tinted to match the app's card color, so cards read as frosted glass
-    /// over the dark background rather than opaque panels.
+    /// Flat card surface with a soft shadow — matches a light, friendly card-based UI
+    /// rather than a frosted/glass panel. Works the same in light and dark since the
+    /// shadow is nearly invisible on dark backgrounds anyway.
     func glassCard<S: Shape>(_ shape: S, tint: Color = Theme.cardBackground) -> some View {
-        self.glassEffect(.regular.tint(tint.opacity(0.38)), in: shape)
+        self
+            .background(tint, in: shape)
+            .clipShape(shape)
+            .shadow(color: Color.black.opacity(0.06), radius: 10, x: 0, y: 4)
     }
 
     func glassCardAlt<S: Shape>(_ shape: S, tint: Color = Theme.cardBackgroundAlt) -> some View {
-        self.glassEffect(.regular.tint(tint.opacity(0.38)), in: shape)
+        self
+            .background(tint, in: shape)
+            .clipShape(shape)
     }
 }
 

@@ -35,12 +35,12 @@ struct RootView: View {
 }
 
 private enum RootTab: String, CaseIterable {
-    case dashboard, diary, progress, more
+    case home, tracker, progress, more
 
     var label: String {
         switch self {
-        case .dashboard: return "Dashboard"
-        case .diary: return "Diary"
+        case .home: return "Home"
+        case .tracker: return "Tracker"
         case .progress: return "Progress"
         case .more: return "More"
         }
@@ -48,10 +48,10 @@ private enum RootTab: String, CaseIterable {
 
     var icon: String {
         switch self {
-        case .dashboard: return "square.grid.2x2.fill"
-        case .diary: return "book.closed.fill"
-        case .progress: return "chart.bar.fill"
-        case .more: return "line.3.horizontal"
+        case .home: return "house"
+        case .tracker: return "square.grid.2x2"
+        case .progress: return "chart.line.uptrend.xyaxis"
+        case .more: return "person"
         }
     }
 
@@ -59,7 +59,7 @@ private enum RootTab: String, CaseIterable {
 }
 
 private struct MainTabView: View {
-    @State private var selectedTab: RootTab = .dashboard
+    @State private var selectedTab: RootTab = .home
     @State private var showingQuickLog = false
     @State private var toastMessage: String?
     @State private var barWidth: CGFloat = 0
@@ -72,8 +72,8 @@ private struct MainTabView: View {
         ZStack(alignment: .bottom) {
             Group {
                 switch selectedTab {
-                case .dashboard: HomeDashboardView()
-                case .diary: DiaryView()
+                case .home: HomeDashboardView()
+                case .tracker: TrackerPlaceholderView()
                 case .progress: ProgressTabView()
                 case .more: MoreView()
                 }
@@ -200,11 +200,11 @@ private struct MainTabView: View {
     }
 
     private func tabButton(_ tab: RootTab) -> some View {
-        VStack(spacing: 3) {
+        VStack(spacing: 4) {
             Image(systemName: tab.icon)
-                .font(.system(size: 19))
+                .font(.system(size: 20, weight: .regular))
             Text(tab.label)
-                .font(Theme.Font.text(9, weight: .medium))
+                .font(Theme.Font.text(10, weight: .regular))
         }
         .foregroundStyle(selectedTab == tab ? Theme.accent : Theme.textFaint)
         .frame(maxWidth: .infinity)

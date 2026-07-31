@@ -19,45 +19,49 @@ struct WaterWidgetCard: View {
         min(1, Double(waterMl) / Double(max(1, profile.waterGoalMl)))
     }
 
+    private var waterGradient: LinearGradient {
+        LinearGradient(colors: [Theme.water, Color(hex: 0x1E6FA8)], startPoint: .topLeading, endPoint: .bottomTrailing)
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Image(systemName: "drop.fill")
-                    .font(.system(size: 14, weight: .semibold))
+        HStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 6) {
+                    Text("💧")
+                        .font(.system(size: 14))
+                    Text("Water")
+                        .font(Theme.Font.text(13, weight: .semibold))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+
+                HStack(alignment: .lastTextBaseline, spacing: 4) {
+                    Text(litersString(waterMl))
+                        .font(Theme.Font.display(24))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text("/ \(litersString(profile.waterGoalMl))L")
+                        .font(Theme.Font.text(12))
+                        .foregroundStyle(Theme.textTertiary)
+                }
+            }
+
+            Spacer(minLength: 0)
+
+            ZStack {
+                RingGaugeView(progress: fraction, lineWidth: 8, progressGradient: waterGradient)
+                Text("\(Int(fraction * 100))%")
+                    .font(Theme.Font.text(12, weight: .bold))
                     .foregroundStyle(Theme.water)
-                Text("Water")
-                    .font(Theme.Font.text(13, weight: .semibold))
-                    .foregroundStyle(Theme.textSecondary)
-                Spacer()
-                Button(action: addWater) {
-                    Image(systemName: "plus")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(Theme.water)
-                        .frame(width: 30, height: 30)
-                        .glassCardAlt(Circle())
-                }
-                .buttonStyle(.plain)
             }
+            .frame(width: 56, height: 56)
 
-            HStack(alignment: .lastTextBaseline, spacing: 4) {
-                Text(litersString(waterMl))
-                    .font(Theme.Font.display(22))
-                    .foregroundStyle(Theme.textPrimary)
-                Text("Liters / \(litersString(profile.waterGoalMl))L")
-                    .font(Theme.Font.text(12))
-                    .foregroundStyle(Theme.textTertiary)
+            Button(action: addWater) {
+                Image(systemName: "plus")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(Theme.onWater)
+                    .frame(width: 32, height: 32)
+                    .background(Theme.water, in: Circle())
             }
-
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(Theme.hairline)
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(Theme.water)
-                        .frame(width: geo.size.width * fraction)
-                }
-            }
-            .frame(height: 6)
+            .buttonStyle(.plain)
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)

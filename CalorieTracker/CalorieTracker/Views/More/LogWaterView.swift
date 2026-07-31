@@ -98,9 +98,9 @@ struct LogWaterView: View {
                     .padding(.horizontal, 4)
 
                     HStack(spacing: 10) {
-                        presetButton(amount: 100, icon: "drop.fill")
-                        presetButton(amount: 250, icon: "cup.and.saucer.fill")
-                        presetButton(amount: 500, icon: "waterbottle.fill")
+                        presetButton(amount: 100, emoji: "💧")
+                        presetButton(amount: 250, emoji: "☕")
+                        presetButton(amount: 500, emoji: "🍶")
                         customButton
                     }
 
@@ -191,14 +191,13 @@ struct LogWaterView: View {
         }
     }
 
-    private func presetButton(amount: Int, icon: String) -> some View {
+    private func presetButton(amount: Int, emoji: String) -> some View {
         Button {
             milliliters = min(1000, milliliters + amount)
         } label: {
             VStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(Theme.water)
+                Text(emoji)
+                    .font(.system(size: 16))
                 Text("+\(amount)")
                     .font(Theme.Font.text(12, weight: .semibold))
                     .foregroundStyle(Theme.textPrimary)

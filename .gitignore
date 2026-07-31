@@ -1,0 +1,30 @@
+# Xcode
+CalorieTracker/CalorieTracker.xcodeproj/xcuserdata/
+CalorieTracker/CalorieTracker.xcodeproj/project.xcworkspace/xcuserdata/
+CalorieTracker/CalorieTracker.xcodeproj/project.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+*.xcuserstate
+*.xcuserdatad/
+
+# Build products / derived data
+CalorieTracker/build/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# XcodeGen-generated project (regenerate with `xcodegen generate`)
+CalorieTracker/CalorieTracker.xcodeproj/
+
+# macOS
+.DS_Store
+
+# Swift Package Manager
+.swiftpm/
+.build/
+
+# Fastlane (if ever added)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output

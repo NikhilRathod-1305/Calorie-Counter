@@ -134,11 +134,22 @@ struct ProgressTabView: View {
         return loggedIntakeDays.reduce(0) { $0 + $1.protein } / Double(loggedIntakeDays.count)
     }
 
+    private var hasLoggedToday: Bool {
+        let cal = Calendar.current
+        return mealEntries.contains { cal.isDateInToday($0.timestamp) }
+    }
+
     private var loggingStreak: Int {
         let cal = Calendar.current
         let loggedDays = Set(mealEntries.map { cal.startOfDay(for: $0.timestamp) })
         var streak = 0
         var day = cal.startOfDay(for: Date())
+        // Today doesn't break an in-progress streak until it ends — if nothing's
+        // logged yet today, start counting from yesterday instead of reporting 0.
+        if !loggedDays.contains(day) {
+            guard let yesterday = cal.date(byAdding: .day, value: -1, to: day) else { return 0 }
+            day = yesterday
+        }
         while loggedDays.contains(day) {
             streak += 1
             guard let prev = cal.date(byAdding: .day, value: -1, to: day) else { break }
@@ -231,6 +242,11 @@ struct ProgressTabView: View {
 
     // MARK: Streak
 
+    private var streakSubtitle: String {
+        if loggingStreak == 0 { return "Log food today to start a streak" }
+        return hasLoggedToday ? "Keep logging to grow your streak" : "Log today to keep your streak alive"
+    }
+
     private var streakCard: some View {
         HStack(spacing: 14) {
             Circle()
@@ -250,7 +266,7 @@ struct ProgressTabView: View {
                         .font(Theme.Font.text(13))
                         .foregroundStyle(Theme.textSecondary)
                 }
-                Text(loggingStreak > 0 ? "Keep logging to grow your streak" : "Log food today to start a streak")
+                Text(streakSubtitle)
                     .font(Theme.Font.text(11))
                     .foregroundStyle(Theme.textFaint)
             }

@@ -1,0 +1,608 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		00C055033EC64D97BA0E406E /* StatTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17C3E3E1955C74396F56B011 /* StatTile.swift */; };
+		01DD9A219CFF777496B32576 /* OpenFoodFactsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77CCA8C9F2964AAB0DBF87FF /* OpenFoodFactsService.swift */; };
+		032088B8CE90B5C564D9F1CB /* BottomSheetContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2E42FF25DD84DA7F1846AD /* BottomSheetContainer.swift */; };
+		05648BB27D3C42581C4F008A /* PillSegmentedControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDF0B5D7905E23800FE4ED03 /* PillSegmentedControl.swift */; };
+		0AEF0C9FA022B6D579D4500C /* WaterWidgetCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6994A84A04ED879CC956479B /* WaterWidgetCard.swift */; };
+		12B826DE5C15BF43CA16B90F /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1597CE6442503B690DC2EB8 /* RootView.swift */; };
+		13AA1722E82F4265426A2A0A /* SwipeToDeleteRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A15A9CCD8E92B2B387CF999C /* SwipeToDeleteRow.swift */; };
+		175C5D4A043A5B4CF85C8DB9 /* MoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEC3B67ACCEF7E356497D37B /* MoreView.swift */; };
+		1894A65081AF867043108267 /* CalorieRingCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6361C8D32C4A654C05F42F69 /* CalorieRingCard.swift */; };
+		19D62DBA90286BC4573A1B1E /* ToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520B6A2EA905F933551E41FE /* ToastView.swift */; };
+		1D4E8B12B944332B8108C9EC /* AppTopBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EE1EE0F7FB408F5B99B56E0 /* AppTopBar.swift */; };
+		1F574FCDBF412801FB0F7689 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8364831E394D44F3797CDAA9 /* UserProfile.swift */; };
+		239D7B3F73A4784F3DB2EA72 /* FoodLibrarySeeder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 571446D431E1B0B6128410B5 /* FoodLibrarySeeder.swift */; };
+		2C11DAD80CC09834B1BA9529 /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C83207BE387F583E66B5A7AA /* HistoryView.swift */; };
+		2F8D376005EEB8E7E10D4EA2 /* CalorieTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17F3A473A725E3CD8D8892E7 /* CalorieTrackerApp.swift */; };
+		2F9065A42C9A3838A0ECCA84 /* GoalsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 252A985E8ADBCE733FC2AC9A /* GoalsSettingsView.swift */; };
+		35A8D494B2C1280837DD393B /* LogWaterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 806E920498C9851BA3DAB853 /* LogWaterView.swift */; };
+		43A729073B037A0368A30DBB /* WeightLogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3F2E4DC370BACE653F973B7 /* WeightLogEntry.swift */; };
+		45D72492842A3F5B3A50AAE8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2BDE76634EC58CF7153DEC63 /* Assets.xcassets */; };
+		492BA8053AC6225A4FA2895F /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20D5B32720B3D94712D7986D /* ProfileView.swift */; };
+		4C474FACC1403A75FA1CA764 /* BarcodeScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7EEE0C8A6FF5ED0A7AADBEF5 /* BarcodeScannerView.swift */; };
+		4EA3D1778B7B82B266D3434B /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 987B6F11723CA8EBB336FE6D /* KeychainStore.swift */; };
+		505942DD599746F7E5D419EA /* OnboardingOptionCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26B49C4C2CC8D17420126F6D /* OnboardingOptionCard.swift */; };
+		50E2A21BB4489EFF8BCC5BB9 /* GeminiFoodService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B990B4E4C51586A94542420E /* GeminiFoodService.swift */; };
+		5166D5B865DDC5DA2F2B66EC /* QuickLogSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E1E5E7958764060F2359CC /* QuickLogSheet.swift */; };
+		5B05AF46284B844B65402AB8 /* QuantityStepper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54DB41DF3E6B093CCE1A8463 /* QuantityStepper.swift */; };
+		63DB0352779551CAA5B2FFBD /* WaterWaveShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = F544CCF54650B580FC28FD05 /* WaterWaveShape.swift */; };
+		645D0A2607495DEA6C7B8769 /* HealthKitStepsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC913666C9CFD8B946D11DF1 /* HealthKitStepsService.swift */; };
+		762FABC5711631F15483F7D0 /* NutritionGoalCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FA2828CC859B66CEB297147 /* NutritionGoalCalculator.swift */; };
+		7843E138B520448665E8013B /* OnboardingQuestionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1C2304FEDD896B49BA38CA4 /* OnboardingQuestionScreen.swift */; };
+		79E002B38B1C7C74368FEC4F /* StepsWidgetCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 383889B7A169AA5BFBFA16F8 /* StepsWidgetCard.swift */; };
+		8072836FBC22FDB7841170C6 /* DataExportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 145981D3388D141B8826E783 /* DataExportService.swift */; };
+		86E68258AA45A1F1A7D4CC2B /* WaterLogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1C7D1D6251554294CE575E6A /* WaterLogEntry.swift */; };
+		9820EA727042BCAE20D8050B /* LogFoodSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F36AA042451EBC678914608B /* LogFoodSheet.swift */; };
+		992959AB017D07807784BC23 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9D0830970C22079C977A72C /* AboutView.swift */; };
+		A195702D50DEF25CEA455472 /* LogWaterSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF3A8630BE96826FA8A0443E /* LogWaterSheet.swift */; };
+		A23001214DA8234718BC41DC /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD781DAA8168451589815299 /* Theme.swift */; };
+		A5E78380CAF07F6B59AEB2C0 /* ProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9314C2804E6AB0BCD8D86464 /* ProgressView.swift */; };
+		A700DBA9CC6B5A1AEA8463A2 /* WaterExerciseGoalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8EE72ACDE683F4CD69E4F84 /* WaterExerciseGoalsView.swift */; };
+		AE5D4F6C4205C6044A53DFC0 /* ExerciseEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5550A9E0EFFCB40A9F9E2963 /* ExerciseEntry.swift */; };
+		B249637368DDFD65528F200F /* SpeechTranscriber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FD29B1E1DF2851136F7F891 /* SpeechTranscriber.swift */; };
+		C015340969E332621D765532 /* LogWeightSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFDB154767D68E35FF09DA33 /* LogWeightSheet.swift */; };
+		CA2680F6CCF4EA49591C39C4 /* DiaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 940C9AE96FBEAF7077D57792 /* DiaryView.swift */; };
+		CB1A41B7221744527EF60B75 /* CameraCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E4EBD672899B977EA11D64E /* CameraCapture.swift */; };
+		CC4295A57AA539B631193D0F /* HomeDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BFF09951F1BAAAC678E4769 /* HomeDashboardView.swift */; };
+		E13E64F26B63D686F76A817B /* WeightWidgetCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C49A24BADD8C617B5127E1E /* WeightWidgetCard.swift */; };
+		F202BD1A8737046AA1EBB75A /* OnboardingFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4B278683ABEDA5ED3D7D324 /* OnboardingFlowView.swift */; };
+		F4ABA582F7686256020C466F /* MealEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C95DCC3CBD14C15E5B4A2FB /* MealEntry.swift */; };
+		F5CEA145D08211DCFD2EDC5E /* LogExerciseSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B8903E1CDCF1389C6C91B2F /* LogExerciseSheet.swift */; };
+		F837B6F444C0484EBC05D1AC /* ShareSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1844CECC68F1DAFCE85E07E /* ShareSheet.swift */; };
+		FA730976F2CD17DD39C44976 /* FoodItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE3D5E36A30F78B58DBBF62D /* FoodItem.swift */; };
+		FCADB0F5734894E0540BA7FE /* APIKeySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4784CB3CC1B7D398CE5CE369 /* APIKeySettingsView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0D8877BBA2658B0567C64B9A /* CalorieTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CalorieTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		145981D3388D141B8826E783 /* DataExportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExportService.swift; sourceTree = "<group>"; };
+		17C3E3E1955C74396F56B011 /* StatTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatTile.swift; sourceTree = "<group>"; };
+		17F3A473A725E3CD8D8892E7 /* CalorieTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalorieTrackerApp.swift; sourceTree = "<group>"; };
+		1C7D1D6251554294CE575E6A /* WaterLogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaterLogEntry.swift; sourceTree = "<group>"; };
+		20D5B32720B3D94712D7986D /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		252A985E8ADBCE733FC2AC9A /* GoalsSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalsSettingsView.swift; sourceTree = "<group>"; };
+		26B49C4C2CC8D17420126F6D /* OnboardingOptionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingOptionCard.swift; sourceTree = "<group>"; };
+		2BDE76634EC58CF7153DEC63 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		2BFF09951F1BAAAC678E4769 /* HomeDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeDashboardView.swift; sourceTree = "<group>"; };
+		383889B7A169AA5BFBFA16F8 /* StepsWidgetCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepsWidgetCard.swift; sourceTree = "<group>"; };
+		3A2E42FF25DD84DA7F1846AD /* BottomSheetContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetContainer.swift; sourceTree = "<group>"; };
+		3E4EBD672899B977EA11D64E /* CameraCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraCapture.swift; sourceTree = "<group>"; };
+		4784CB3CC1B7D398CE5CE369 /* APIKeySettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKeySettingsView.swift; sourceTree = "<group>"; };
+		520B6A2EA905F933551E41FE /* ToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastView.swift; sourceTree = "<group>"; };
+		54DB41DF3E6B093CCE1A8463 /* QuantityStepper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuantityStepper.swift; sourceTree = "<group>"; };
+		5550A9E0EFFCB40A9F9E2963 /* ExerciseEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseEntry.swift; sourceTree = "<group>"; };
+		571446D431E1B0B6128410B5 /* FoodLibrarySeeder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodLibrarySeeder.swift; sourceTree = "<group>"; };
+		6361C8D32C4A654C05F42F69 /* CalorieRingCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalorieRingCard.swift; sourceTree = "<group>"; };
+		6994A84A04ED879CC956479B /* WaterWidgetCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaterWidgetCard.swift; sourceTree = "<group>"; };
+		6C95DCC3CBD14C15E5B4A2FB /* MealEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MealEntry.swift; sourceTree = "<group>"; };
+		6EE1EE0F7FB408F5B99B56E0 /* AppTopBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppTopBar.swift; sourceTree = "<group>"; };
+		6FD29B1E1DF2851136F7F891 /* SpeechTranscriber.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechTranscriber.swift; sourceTree = "<group>"; };
+		755078C9237E3300BA1D5F64 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		77CCA8C9F2964AAB0DBF87FF /* OpenFoodFactsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenFoodFactsService.swift; sourceTree = "<group>"; };
+		7EEE0C8A6FF5ED0A7AADBEF5 /* BarcodeScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarcodeScannerView.swift; sourceTree = "<group>"; };
+		806E920498C9851BA3DAB853 /* LogWaterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWaterView.swift; sourceTree = "<group>"; };
+		8364831E394D44F3797CDAA9 /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
+		8C49A24BADD8C617B5127E1E /* WeightWidgetCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightWidgetCard.swift; sourceTree = "<group>"; };
+		8FA2828CC859B66CEB297147 /* NutritionGoalCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionGoalCalculator.swift; sourceTree = "<group>"; };
+		9314C2804E6AB0BCD8D86464 /* ProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressView.swift; sourceTree = "<group>"; };
+		940C9AE96FBEAF7077D57792 /* DiaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiaryView.swift; sourceTree = "<group>"; };
+		987B6F11723CA8EBB336FE6D /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		9B8903E1CDCF1389C6C91B2F /* LogExerciseSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogExerciseSheet.swift; sourceTree = "<group>"; };
+		A15A9CCD8E92B2B387CF999C /* SwipeToDeleteRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeToDeleteRow.swift; sourceTree = "<group>"; };
+		A4B278683ABEDA5ED3D7D324 /* OnboardingFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingFlowView.swift; sourceTree = "<group>"; };
+		A8EE72ACDE683F4CD69E4F84 /* WaterExerciseGoalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaterExerciseGoalsView.swift; sourceTree = "<group>"; };
+		AD781DAA8168451589815299 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		B990B4E4C51586A94542420E /* GeminiFoodService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiFoodService.swift; sourceTree = "<group>"; };
+		BDF0B5D7905E23800FE4ED03 /* PillSegmentedControl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PillSegmentedControl.swift; sourceTree = "<group>"; };
+		BE3D5E36A30F78B58DBBF62D /* FoodItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodItem.swift; sourceTree = "<group>"; };
+		BFDB154767D68E35FF09DA33 /* LogWeightSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWeightSheet.swift; sourceTree = "<group>"; };
+		C3F2E4DC370BACE653F973B7 /* WeightLogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeightLogEntry.swift; sourceTree = "<group>"; };
+		C83207BE387F583E66B5A7AA /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		CC913666C9CFD8B946D11DF1 /* HealthKitStepsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitStepsService.swift; sourceTree = "<group>"; };
+		D0E1E5E7958764060F2359CC /* QuickLogSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickLogSheet.swift; sourceTree = "<group>"; };
+		D1597CE6442503B690DC2EB8 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		DBDC8CC52C76EBA773F8CC60 /* CalorieTracker.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CalorieTracker.entitlements; sourceTree = "<group>"; };
+		E9D0830970C22079C977A72C /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
+		EEC3B67ACCEF7E356497D37B /* MoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreView.swift; sourceTree = "<group>"; };
+		EF3A8630BE96826FA8A0443E /* LogWaterSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogWaterSheet.swift; sourceTree = "<group>"; };
+		F1844CECC68F1DAFCE85E07E /* ShareSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareSheet.swift; sourceTree = "<group>"; };
+		F1C2304FEDD896B49BA38CA4 /* OnboardingQuestionScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingQuestionScreen.swift; sourceTree = "<group>"; };
+		F36AA042451EBC678914608B /* LogFoodSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogFoodSheet.swift; sourceTree = "<group>"; };
+		F544CCF54650B580FC28FD05 /* WaterWaveShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WaterWaveShape.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		07F2E8B3754D7B82317B38B4 /* CalorieTracker */ = {
+			isa = PBXGroup;
+			children = (
+				17F3A473A725E3CD8D8892E7 /* CalorieTrackerApp.swift */,
+				AD781DAA8168451589815299 /* Theme.swift */,
+				ED575C7D1339A77659C972A0 /* Models */,
+				DC3EBC282E894F1F6C494AF4 /* Resources */,
+				42771FE50DBCA9D739617BE2 /* Services */,
+				B17BED1DE101C2A5D220F7CC /* Views */,
+			);
+			path = CalorieTracker;
+			sourceTree = "<group>";
+		};
+		1E342953C73FBD9129BA27EB /* More */ = {
+			isa = PBXGroup;
+			children = (
+				E9D0830970C22079C977A72C /* AboutView.swift */,
+				4784CB3CC1B7D398CE5CE369 /* APIKeySettingsView.swift */,
+				252A985E8ADBCE733FC2AC9A /* GoalsSettingsView.swift */,
+				C83207BE387F583E66B5A7AA /* HistoryView.swift */,
+				EF3A8630BE96826FA8A0443E /* LogWaterSheet.swift */,
+				806E920498C9851BA3DAB853 /* LogWaterView.swift */,
+				BFDB154767D68E35FF09DA33 /* LogWeightSheet.swift */,
+				EEC3B67ACCEF7E356497D37B /* MoreView.swift */,
+				20D5B32720B3D94712D7986D /* ProfileView.swift */,
+				A8EE72ACDE683F4CD69E4F84 /* WaterExerciseGoalsView.swift */,
+			);
+			path = More;
+			sourceTree = "<group>";
+		};
+		2F6A9466DD09F80EEE2DF6DD = {
+			isa = PBXGroup;
+			children = (
+				07F2E8B3754D7B82317B38B4 /* CalorieTracker */,
+				51784D51C55F17F2CE626A66 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		42771FE50DBCA9D739617BE2 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				7EEE0C8A6FF5ED0A7AADBEF5 /* BarcodeScannerView.swift */,
+				3E4EBD672899B977EA11D64E /* CameraCapture.swift */,
+				145981D3388D141B8826E783 /* DataExportService.swift */,
+				571446D431E1B0B6128410B5 /* FoodLibrarySeeder.swift */,
+				B990B4E4C51586A94542420E /* GeminiFoodService.swift */,
+				CC913666C9CFD8B946D11DF1 /* HealthKitStepsService.swift */,
+				987B6F11723CA8EBB336FE6D /* KeychainStore.swift */,
+				8FA2828CC859B66CEB297147 /* NutritionGoalCalculator.swift */,
+				77CCA8C9F2964AAB0DBF87FF /* OpenFoodFactsService.swift */,
+				6FD29B1E1DF2851136F7F891 /* SpeechTranscriber.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		51784D51C55F17F2CE626A66 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0D8877BBA2658B0567C64B9A /* CalorieTracker.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5AB63873230EC6732C107F06 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				6EE1EE0F7FB408F5B99B56E0 /* AppTopBar.swift */,
+				3A2E42FF25DD84DA7F1846AD /* BottomSheetContainer.swift */,
+				6361C8D32C4A654C05F42F69 /* CalorieRingCard.swift */,
+				BDF0B5D7905E23800FE4ED03 /* PillSegmentedControl.swift */,
+				54DB41DF3E6B093CCE1A8463 /* QuantityStepper.swift */,
+				D0E1E5E7958764060F2359CC /* QuickLogSheet.swift */,
+				F1844CECC68F1DAFCE85E07E /* ShareSheet.swift */,
+				17C3E3E1955C74396F56B011 /* StatTile.swift */,
+				A15A9CCD8E92B2B387CF999C /* SwipeToDeleteRow.swift */,
+				520B6A2EA905F933551E41FE /* ToastView.swift */,
+				F544CCF54650B580FC28FD05 /* WaterWaveShape.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		5CB6DAD3D1D45FCA8DC08DE6 /* Log */ = {
+			isa = PBXGroup;
+			children = (
+				F36AA042451EBC678914608B /* LogFoodSheet.swift */,
+			);
+			path = Log;
+			sourceTree = "<group>";
+		};
+		9C15443511BB08D96A89616E /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				A4B278683ABEDA5ED3D7D324 /* OnboardingFlowView.swift */,
+				26B49C4C2CC8D17420126F6D /* OnboardingOptionCard.swift */,
+				F1C2304FEDD896B49BA38CA4 /* OnboardingQuestionScreen.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		B15D61D02935554536786506 /* Progress */ = {
+			isa = PBXGroup;
+			children = (
+				9314C2804E6AB0BCD8D86464 /* ProgressView.swift */,
+			);
+			path = Progress;
+			sourceTree = "<group>";
+		};
+		B17BED1DE101C2A5D220F7CC /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				D1597CE6442503B690DC2EB8 /* RootView.swift */,
+				5AB63873230EC6732C107F06 /* Components */,
+				E7BC781D418403BFAEB07B45 /* Diary */,
+				DD8C4450598971A8455C699E /* Home */,
+				5CB6DAD3D1D45FCA8DC08DE6 /* Log */,
+				1E342953C73FBD9129BA27EB /* More */,
+				9C15443511BB08D96A89616E /* Onboarding */,
+				B15D61D02935554536786506 /* Progress */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		DC3EBC282E894F1F6C494AF4 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				2BDE76634EC58CF7153DEC63 /* Assets.xcassets */,
+				DBDC8CC52C76EBA773F8CC60 /* CalorieTracker.entitlements */,
+				755078C9237E3300BA1D5F64 /* Info.plist */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		DD8C4450598971A8455C699E /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				2BFF09951F1BAAAC678E4769 /* HomeDashboardView.swift */,
+				9B8903E1CDCF1389C6C91B2F /* LogExerciseSheet.swift */,
+				383889B7A169AA5BFBFA16F8 /* StepsWidgetCard.swift */,
+				6994A84A04ED879CC956479B /* WaterWidgetCard.swift */,
+				8C49A24BADD8C617B5127E1E /* WeightWidgetCard.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
+		E7BC781D418403BFAEB07B45 /* Diary */ = {
+			isa = PBXGroup;
+			children = (
+				940C9AE96FBEAF7077D57792 /* DiaryView.swift */,
+			);
+			path = Diary;
+			sourceTree = "<group>";
+		};
+		ED575C7D1339A77659C972A0 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				5550A9E0EFFCB40A9F9E2963 /* ExerciseEntry.swift */,
+				BE3D5E36A30F78B58DBBF62D /* FoodItem.swift */,
+				6C95DCC3CBD14C15E5B4A2FB /* MealEntry.swift */,
+				8364831E394D44F3797CDAA9 /* UserProfile.swift */,
+				1C7D1D6251554294CE575E6A /* WaterLogEntry.swift */,
+				C3F2E4DC370BACE653F973B7 /* WeightLogEntry.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		328EE4E3852D96A6CD688FD0 /* CalorieTracker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AED8B6A0984A67793C83A32A /* Build configuration list for PBXNativeTarget "CalorieTracker" */;
+			buildPhases = (
+				EEEBB93826A3C5E62AEDA0C6 /* Sources */,
+				D96387DD2091368DC317FBCD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CalorieTracker;
+			packageProductDependencies = (
+			);
+			productName = CalorieTracker;
+			productReference = 0D8877BBA2658B0567C64B9A /* CalorieTracker.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DACAFB4BE3FF8760DA0BAE36 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					328EE4E3852D96A6CD688FD0 = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = E9D16DCA08F02FCB8F78E052 /* Build configuration list for PBXProject "CalorieTracker" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 2F6A9466DD09F80EEE2DF6DD;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 51784D51C55F17F2CE626A66 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				328EE4E3852D96A6CD688FD0 /* CalorieTracker */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D96387DD2091368DC317FBCD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				45D72492842A3F5B3A50AAE8 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		EEEBB93826A3C5E62AEDA0C6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FCADB0F5734894E0540BA7FE /* APIKeySettingsView.swift in Sources */,
+				992959AB017D07807784BC23 /* AboutView.swift in Sources */,
+				1D4E8B12B944332B8108C9EC /* AppTopBar.swift in Sources */,
+				4C474FACC1403A75FA1CA764 /* BarcodeScannerView.swift in Sources */,
+				032088B8CE90B5C564D9F1CB /* BottomSheetContainer.swift in Sources */,
+				1894A65081AF867043108267 /* CalorieRingCard.swift in Sources */,
+				2F8D376005EEB8E7E10D4EA2 /* CalorieTrackerApp.swift in Sources */,
+				CB1A41B7221744527EF60B75 /* CameraCapture.swift in Sources */,
+				8072836FBC22FDB7841170C6 /* DataExportService.swift in Sources */,
+				CA2680F6CCF4EA49591C39C4 /* DiaryView.swift in Sources */,
+				AE5D4F6C4205C6044A53DFC0 /* ExerciseEntry.swift in Sources */,
+				FA730976F2CD17DD39C44976 /* FoodItem.swift in Sources */,
+				239D7B3F73A4784F3DB2EA72 /* FoodLibrarySeeder.swift in Sources */,
+				50E2A21BB4489EFF8BCC5BB9 /* GeminiFoodService.swift in Sources */,
+				2F9065A42C9A3838A0ECCA84 /* GoalsSettingsView.swift in Sources */,
+				645D0A2607495DEA6C7B8769 /* HealthKitStepsService.swift in Sources */,
+				2C11DAD80CC09834B1BA9529 /* HistoryView.swift in Sources */,
+				CC4295A57AA539B631193D0F /* HomeDashboardView.swift in Sources */,
+				4EA3D1778B7B82B266D3434B /* KeychainStore.swift in Sources */,
+				F5CEA145D08211DCFD2EDC5E /* LogExerciseSheet.swift in Sources */,
+				9820EA727042BCAE20D8050B /* LogFoodSheet.swift in Sources */,
+				A195702D50DEF25CEA455472 /* LogWaterSheet.swift in Sources */,
+				35A8D494B2C1280837DD393B /* LogWaterView.swift in Sources */,
+				C015340969E332621D765532 /* LogWeightSheet.swift in Sources */,
+				F4ABA582F7686256020C466F /* MealEntry.swift in Sources */,
+				175C5D4A043A5B4CF85C8DB9 /* MoreView.swift in Sources */,
+				762FABC5711631F15483F7D0 /* NutritionGoalCalculator.swift in Sources */,
+				F202BD1A8737046AA1EBB75A /* OnboardingFlowView.swift in Sources */,
+				505942DD599746F7E5D419EA /* OnboardingOptionCard.swift in Sources */,
+				7843E138B520448665E8013B /* OnboardingQuestionScreen.swift in Sources */,
+				01DD9A219CFF777496B32576 /* OpenFoodFactsService.swift in Sources */,
+				05648BB27D3C42581C4F008A /* PillSegmentedControl.swift in Sources */,
+				492BA8053AC6225A4FA2895F /* ProfileView.swift in Sources */,
+				A5E78380CAF07F6B59AEB2C0 /* ProgressView.swift in Sources */,
+				5B05AF46284B844B65402AB8 /* QuantityStepper.swift in Sources */,
+				5166D5B865DDC5DA2F2B66EC /* QuickLogSheet.swift in Sources */,
+				12B826DE5C15BF43CA16B90F /* RootView.swift in Sources */,
+				F837B6F444C0484EBC05D1AC /* ShareSheet.swift in Sources */,
+				B249637368DDFD65528F200F /* SpeechTranscriber.swift in Sources */,
+				00C055033EC64D97BA0E406E /* StatTile.swift in Sources */,
+				79E002B38B1C7C74368FEC4F /* StepsWidgetCard.swift in Sources */,
+				13AA1722E82F4265426A2A0A /* SwipeToDeleteRow.swift in Sources */,
+				A23001214DA8234718BC41DC /* Theme.swift in Sources */,
+				19D62DBA90286BC4573A1B1E /* ToastView.swift in Sources */,
+				1F574FCDBF412801FB0F7689 /* UserProfile.swift in Sources */,
+				A700DBA9CC6B5A1AEA8463A2 /* WaterExerciseGoalsView.swift in Sources */,
+				86E68258AA45A1F1A7D4CC2B /* WaterLogEntry.swift in Sources */,
+				63DB0352779551CAA5B2FFBD /* WaterWaveShape.swift in Sources */,
+				0AEF0C9FA022B6D579D4500C /* WaterWidgetCard.swift in Sources */,
+				43A729073B037A0368A30DBB /* WeightLogEntry.swift in Sources */,
+				E13E64F26B63D686F76A817B /* WeightWidgetCard.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1CBA350FC67B0A96093EE082 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = CalorieTracker/Resources/CalorieTracker.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = YJJYU974Z9;
+				INFOPLIST_FILE = CalorieTracker/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nikhilrathod.CalorieTracker;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		C900790C37A1E9D60BE3BE22 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = CalorieTracker/Resources/CalorieTracker.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = YJJYU974Z9;
+				INFOPLIST_FILE = CalorieTracker/Resources/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nikhilrathod.CalorieTracker;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		DF43BB79EDD77F6FDD9FB5B1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = D74G6BG2UJ;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		EEAAF43FFB5A7B7A3BF1C2DA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = D74G6BG2UJ;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AED8B6A0984A67793C83A32A /* Build configuration list for PBXNativeTarget "CalorieTracker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1CBA350FC67B0A96093EE082 /* Debug */,
+				C900790C37A1E9D60BE3BE22 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E9D16DCA08F02FCB8F78E052 /* Build configuration list for PBXProject "CalorieTracker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EEAAF43FFB5A7B7A3BF1C2DA /* Debug */,
+				DF43BB79EDD77F6FDD9FB5B1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = DACAFB4BE3FF8760DA0BAE36 /* Project object */;
+}

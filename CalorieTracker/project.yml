@@ -1,0 +1,41 @@
+name: CalorieTracker
+options:
+  bundleIdPrefix: com.nikhilrathod
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    DEVELOPMENT_TEAM: "D74G6BG2UJ"
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_PREVIEWS: YES
+targets:
+  CalorieTracker:
+    type: application
+    platform: iOS
+    deploymentTarget: "26.0"
+    sources:
+      - path: CalorieTracker
+    info:
+      path: CalorieTracker/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: "Count on Me"
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        NSCameraUsageDescription: "Used to photograph meals so calories and nutrients can be identified automatically."
+        NSMicrophoneUsageDescription: "Used to record your voice so you can log meals by speaking."
+        NSSpeechRecognitionUsageDescription: "Used to transcribe your voice into text when logging a meal."
+        NSPhotoLibraryUsageDescription: "Used to pick meal photos from your library to log calories."
+        NSHealthShareUsageDescription: "Used to show your daily step count on the dashboard."
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.nikhilrathod.CalorieTracker
+        TARGETED_DEVICE_FAMILY: "1"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        CODE_SIGN_ENTITLEMENTS: CalorieTracker/Resources/CalorieTracker.entitlements
+    scheme:
+      testTargets: []
+      gatherCoverageData: false

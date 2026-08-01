@@ -18,6 +18,8 @@ final class FoodItem {
     var category: FoodCategory
     var isCustom: Bool
     var emoji: String
+    var isFavorite: Bool = false
+    var createdAt: Date = Date()
 
     init(
         name: String,
@@ -33,7 +35,8 @@ final class FoodItem {
         servingUnit: String = "g",
         category: FoodCategory = .other,
         isCustom: Bool = false,
-        emoji: String = "🍽️"
+        emoji: String = "🍽️",
+        isFavorite: Bool = false
     ) {
         self.id = UUID()
         self.name = name
@@ -50,6 +53,8 @@ final class FoodItem {
         self.category = category
         self.isCustom = isCustom
         self.emoji = emoji
+        self.isFavorite = isFavorite
+        self.createdAt = Date()
     }
 
     func nutritionFor(quantity: Double) -> NutritionValues {

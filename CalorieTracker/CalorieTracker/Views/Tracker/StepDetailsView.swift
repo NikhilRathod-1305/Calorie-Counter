@@ -6,7 +6,6 @@ struct StepDetailsView: View {
     @Query private var profiles: [UserProfile]
 
     @State private var viewedDate: Date = Calendar.current.startOfDay(for: Date())
-    @State private var showingMonthCalendar = false
     @State private var showingEditGoal = false
     @State private var dailySteps: [Date: Int] = [:]
     @State private var unavailable = false
@@ -94,53 +93,13 @@ struct StepDetailsView: View {
     // MARK: Header + date strip + expandable month calendar
 
     private var dateStripSection: some View {
-        VStack(spacing: 0) {
-            if showingMonthCalendar {
-                MonthCalendarView(
-                    selectedDate: $viewedDate,
-                    progress: dayProgress,
-                    tint: Theme.steps,
-                    tintSoft: Theme.secondarySoft,
-                    tintGradient: Theme.secondaryGradient
-                )
-                .padding(16)
-                .padding(.bottom, 4)
-                .transition(.opacity)
-            } else {
-                DateStripPicker(
-                    selectedDate: $viewedDate,
-                    progress: dayProgress,
-                    showsHeader: false,
-                    wrapsInCard: false,
-                    tint: Theme.steps,
-                    tintSoft: Theme.secondarySoft,
-                    tintGradient: Theme.secondaryGradient
-                )
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
-                .padding(.bottom, 4)
-                .transition(.opacity)
-            }
-
-            Button {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
-                    showingMonthCalendar.toggle()
-                }
-            } label: {
-                Image(systemName: showingMonthCalendar ? "chevron.up" : "chevron.down")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(Theme.textFaint)
-                    .frame(width: 60, height: 28)
-                    .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .frame(maxWidth: .infinity)
-            .padding(.bottom, 8)
-        }
-        .background(Theme.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.large))
-        .shadow(color: Color.black.opacity(0.06), radius: 10, x: 0, y: 4)
-        .padding(.horizontal, 16)
+        ExpandableDateHeader(
+            selectedDate: $viewedDate,
+            progress: dayProgress,
+            tint: Theme.steps,
+            tintSoft: Theme.secondarySoft,
+            tintGradient: Theme.secondaryGradient
+        )
     }
 
     // MARK: History preview (last 7 days)

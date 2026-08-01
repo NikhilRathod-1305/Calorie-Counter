@@ -13,9 +13,18 @@ struct MonthCalendarView: View {
     var tintSoft: Color = Theme.accentSoft
     var tintGradient: LinearGradient = Theme.accentGradient
 
-    @State private var visibleMonth: Date
+    @State private var visibleMonthOffset: Int = 0
 
     private let calendar = Calendar.current
+    private let monthOffsetRange = -240...240 // ~20 years back/forward
+
+    private var referenceMonthStart: Date {
+        calendar.dateInterval(of: .month, for: Date())?.start ?? Date()
+    }
+
+    private var visibleMonth: Date {
+        monthStart(atOffset: visibleMonthOffset)
+    }
 
     init(
         selectedDate: Binding<Date>,
@@ -29,16 +38,24 @@ struct MonthCalendarView: View {
         self.tint = tint
         self.tintSoft = tintSoft
         self.tintGradient = tintGradient
-        self._visibleMonth = State(initialValue: selectedDate.wrappedValue)
     }
 
-    private var monthDays: [Date?] {
-        guard let monthInterval = calendar.dateInterval(of: .month, for: visibleMonth) else { return [] }
+    private func monthStart(atOffset offset: Int) -> Date {
+        calendar.date(byAdding: .month, value: offset, to: referenceMonthStart) ?? referenceMonthStart
+    }
+
+    private func monthOffset(for date: Date) -> Int {
+        let monthStart = calendar.dateInterval(of: .month, for: date)?.start ?? date
+        return calendar.dateComponents([.month], from: referenceMonthStart, to: monthStart).month ?? 0
+    }
+
+    private func monthDays(for month: Date) -> [Date?] {
+        guard let monthInterval = calendar.dateInterval(of: .month, for: month) else { return [] }
         let firstOfMonth = monthInterval.start
         let weekday = calendar.component(.weekday, from: firstOfMonth)
         // Weekday is 1=Sun...7=Sat; convert to Monday-first leading blank count.
         let leadingBlanks = (weekday + 5) % 7
-        let dayCount = calendar.range(of: .day, in: .month, for: visibleMonth)?.count ?? 30
+        let dayCount = calendar.range(of: .day, in: .month, for: month)?.count ?? 30
 
         var days: [Date?] = Array(repeating: nil, count: leadingBlanks)
         days += (0..<dayCount).compactMap { calendar.date(byAdding: .day, value: $0, to: firstOfMonth) }
@@ -53,8 +70,8 @@ struct MonthCalendarView: View {
                     .font(Theme.Font.display(17))
                     .foregroundStyle(Theme.textPrimary)
                 Spacer()
-                navButton(icon: "chevron.left") { shiftMonth(by: -1) }
-                navButton(icon: "chevron.right") { shiftMonth(by: 1) }
+                navButton(icon: "chevron.left") { shiftVisibleMonth(by: -1) }
+                navButton(icon: "chevron.right") { shiftVisibleMonth(by: 1) }
             }
 
             HStack(spacing: 0) {
@@ -66,19 +83,35 @@ struct MonthCalendarView: View {
                 }
             }
 
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
-                ForEach(Array(monthDays.enumerated()), id: \.offset) { _, day in
-                    if let day {
-                        dayCell(day)
-                    } else {
-                        Color.clear.frame(height: 34)
-                    }
+            TabView(selection: $visibleMonthOffset) {
+                ForEach(monthOffsetRange, id: \.self) { offset in
+                    monthGrid(for: monthStart(atOffset: offset))
+                        .tag(offset)
                 }
             }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(height: 6 * 42)
+        }
+        .onAppear {
+            visibleMonthOffset = monthOffset(for: selectedDate)
         }
         .onChange(of: selectedDate) { _, newValue in
             if !calendar.isDate(newValue, equalTo: visibleMonth, toGranularity: .month) {
-                visibleMonth = newValue
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                    visibleMonthOffset = monthOffset(for: newValue)
+                }
+            }
+        }
+    }
+
+    private func monthGrid(for month: Date) -> some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 7), spacing: 8) {
+            ForEach(Array(monthDays(for: month).enumerated()), id: \.offset) { _, day in
+                if let day {
+                    dayCell(day)
+                } else {
+                    Color.clear.frame(height: 34)
+                }
             }
         }
     }
@@ -91,9 +124,9 @@ struct MonthCalendarView: View {
         return formatter.string(from: date)
     }
 
-    private func shiftMonth(by months: Int) {
+    private func shiftVisibleMonth(by months: Int) {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
-            visibleMonth = calendar.date(byAdding: .month, value: months, to: visibleMonth) ?? visibleMonth
+            visibleMonthOffset += months
         }
     }
 

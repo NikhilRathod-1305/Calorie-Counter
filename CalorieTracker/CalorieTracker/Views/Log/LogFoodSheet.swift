@@ -12,7 +12,6 @@ enum LogMode: String, CaseIterable {
 
 struct LogFoodSheet: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var allFoods: [FoodItem]
     let initialMode: LogMode
     let editingEntry: MealEntry?
     let onClose: () -> Void
@@ -36,14 +35,11 @@ struct LogFoodSheet: View {
     // Text
     @State private var textDraft: String = ""
 
-    // Browse
-    @State private var browseQuery: String = ""
-    @State private var browseSelectedID: PersistentIdentifier?
-
     // Shared result
     @State private var pendingResult: ParsedFoodResult?
     @State private var isLoading = false
     @State private var errorMessage: String?
+    @State private var saveToMyFoods: Bool
 
     init(initialMode: LogMode, mealType: MealType = MealType.currentMealType, editingEntry: MealEntry? = nil, onClose: @escaping () -> Void, onAdded: @escaping () -> Void) {
         self.initialMode = initialMode
@@ -52,6 +48,9 @@ struct LogFoodSheet: View {
         self.onAdded = onAdded
         _mode = State(initialValue: initialMode)
         _mealType = State(initialValue: editingEntry?.mealType ?? mealType)
+        // Existing entries default the checkbox off — saving to My Foods here is an
+        // explicit opt-in rather than a side effect of just editing a quantity/value.
+        _saveToMyFoods = State(initialValue: editingEntry == nil)
         if let editingEntry {
             _pendingResult = State(initialValue: ParsedFoodResult(
                 name: editingEntry.displayName,
@@ -83,25 +82,29 @@ struct LogFoodSheet: View {
                     .onChange(of: mode) { _, _ in resetTransient() }
                 }
 
-                ScrollView {
-                    Group {
-                        if let pendingResult {
-                            resultCard(Binding(
-                                get: { pendingResult },
-                                set: { self.pendingResult = $0 }
-                            ))
-                        } else {
-                            switch mode {
-                            case .scan: scanBody
-                            case .barcode: barcodeBody
-                            case .voice: voiceBody
-                            case .text: textBody
-                            case .browse: browseBody
+                if pendingResult == nil && mode == .browse {
+                    FoodBrowseView(mealType: mealType, onAdded: onAdded)
+                } else {
+                    ScrollView {
+                        Group {
+                            if let pendingResult {
+                                resultCard(Binding(
+                                    get: { pendingResult },
+                                    set: { self.pendingResult = $0 }
+                                ))
+                            } else {
+                                switch mode {
+                                case .scan: scanBody
+                                case .barcode: barcodeBody
+                                case .voice: voiceBody
+                                case .text: textBody
+                                case .browse: EmptyView()
+                                }
                             }
                         }
                     }
+                    .scrollIndicators(.hidden)
                 }
-                .scrollIndicators(.hidden)
 
                 if let errorMessage {
                     Text(errorMessage)
@@ -150,9 +153,8 @@ struct LogFoodSheet: View {
         speech.stop()
         speech.transcript = ""
         textDraft = ""
-        browseQuery = ""
-        browseSelectedID = nil
         quantity = 1
+        saveToMyFoods = true
     }
 
     // MARK: Scan
@@ -405,94 +407,6 @@ struct LogFoodSheet: View {
         isLoading = false
     }
 
-    // MARK: Browse
-
-    private var filteredFoods: [FoodItem] {
-        guard !browseQuery.isEmpty else { return allFoods }
-        return allFoods.filter { $0.name.localizedCaseInsensitiveContains(browseQuery) }
-    }
-
-    private var browseBody: some View {
-        VStack(spacing: 12) {
-            TextField("Search foods…", text: $browseQuery)
-                .font(Theme.Font.text(14))
-                .foregroundStyle(Theme.textPrimary)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .glassCardAlt(RoundedRectangle(cornerRadius: 12))
-
-            LazyVStack(spacing: 0) {
-                ForEach(filteredFoods) { food in
-                    VStack(spacing: 0) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(food.name)
-                                    .font(Theme.Font.text(14))
-                                    .foregroundStyle(Theme.textPrimary)
-                                Text("\(Int(food.servingSize))\(food.servingUnit) serving")
-                                    .font(Theme.Font.text(11))
-                                    .foregroundStyle(Theme.textTertiary)
-                            }
-                            Spacer()
-                            Text("\(Int(food.calories)) cal")
-                                .font(Theme.Font.text(13))
-                                .foregroundStyle(Theme.textSecondary)
-                        }
-                        .padding(.vertical, 12)
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
-                                browseSelectedID = (browseSelectedID == food.persistentModelID) ? nil : food.persistentModelID
-                                quantity = 1
-                            }
-                        }
-
-                        if browseSelectedID == food.persistentModelID {
-                            HStack {
-                                QuantityStepper(quantity: $quantity)
-                                Spacer()
-                                Button {
-                                    addFoodItem(food, quantity: quantity)
-                                } label: {
-                                    Text("Add")
-                                        .font(Theme.Font.text(13, weight: .semibold))
-                                        .foregroundStyle(Theme.onAccent)
-                                        .padding(.horizontal, 18)
-                                        .padding(.vertical, 9)
-                                        .background(Theme.accent, in: RoundedRectangle(cornerRadius: 12))
-                                }
-                                .buttonStyle(.plain)
-                            }
-                            .padding(.bottom, 14)
-                        }
-                    }
-                    Divider().overlay(Theme.hairline.opacity(0.6))
-                }
-            }
-        }
-    }
-
-    private func addFoodItem(_ food: FoodItem, quantity: Double) {
-        let nutrition = food.nutritionFor(quantity: food.servingSize * quantity)
-        let entry = MealEntry(
-            foodItem: food,
-            quantity: food.servingSize * quantity,
-            mealType: mealType,
-            timestamp: Date(),
-            inputMethod: .search,
-            calories: nutrition.calories,
-            protein: nutrition.protein,
-            carbs: nutrition.carbs,
-            fat: nutrition.fat,
-            fiber: nutrition.fiber,
-            sugar: nutrition.sugar,
-            sodium: nutrition.sodium
-        )
-        modelContext.insert(entry)
-        try? modelContext.save()
-        onAdded()
-    }
-
     // MARK: Pending result (Scan/Barcode/Voice/Text) — editable before adding
 
     private func resultCard(_ result: Binding<ParsedFoodResult>) -> some View {
@@ -530,6 +444,23 @@ struct LogFoodSheet: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .glassCardAlt(RoundedRectangle(cornerRadius: 16))
 
+            if editingEntry?.foodItem == nil {
+                Button {
+                    saveToMyFoods.toggle()
+                } label: {
+                    HStack(spacing: 10) {
+                        Image(systemName: saveToMyFoods ? "checkmark.square.fill" : "square")
+                            .font(.system(size: 17))
+                            .foregroundStyle(saveToMyFoods ? Theme.accent : Theme.textFaint)
+                        Text("Save to My Foods for next time")
+                            .font(Theme.Font.text(12, weight: .medium))
+                            .foregroundStyle(Theme.textSecondary)
+                        Spacer()
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+
             HStack {
                 QuantityStepper(quantity: $quantity, size: 32)
                 Spacer()
@@ -562,10 +493,31 @@ struct LogFoodSheet: View {
     }
 
     private func updateEntry(_ entry: MealEntry, with result: ParsedFoodResult, quantity: Double) {
-        entry.foodItem = nil
-        entry.customFoodName = result.name
+        if saveToMyFoods && entry.foodItem == nil {
+            let food = FoodItem(
+                name: result.name,
+                calories: result.calories,
+                protein: result.protein,
+                carbs: result.carbs,
+                fat: result.fat,
+                fiber: result.fiber,
+                sugar: result.sugar,
+                sodium: result.sodium,
+                servingSize: 1,
+                servingUnit: "serving",
+                isCustom: true,
+                emoji: FoodCategory.other.emoji
+            )
+            modelContext.insert(food)
+            entry.foodItem = food
+            entry.customFoodName = nil
+            entry.quantity = quantity
+        } else {
+            entry.foodItem = nil
+            entry.customFoodName = result.name
+            entry.quantity = 1
+        }
         entry.mealType = mealType
-        entry.quantity = 1
         entry.calories = result.calories * quantity
         entry.protein = result.protein * quantity
         entry.carbs = result.carbs * quantity
@@ -615,9 +567,33 @@ struct LogFoodSheet: View {
         case .text: inputMethod = .text
         case .browse: inputMethod = .search
         }
+
+        let savedFood: FoodItem?
+        if saveToMyFoods {
+            let food = FoodItem(
+                name: result.name,
+                calories: result.calories,
+                protein: result.protein,
+                carbs: result.carbs,
+                fat: result.fat,
+                fiber: result.fiber,
+                sugar: result.sugar,
+                sodium: result.sodium,
+                servingSize: 1,
+                servingUnit: "serving",
+                isCustom: true,
+                emoji: FoodCategory.other.emoji
+            )
+            modelContext.insert(food)
+            savedFood = food
+        } else {
+            savedFood = nil
+        }
+
         let entry = MealEntry(
-            customFoodName: result.name,
-            quantity: 1,
+            foodItem: savedFood,
+            customFoodName: savedFood == nil ? result.name : nil,
+            quantity: quantity,
             mealType: mealType,
             timestamp: Date(),
             inputMethod: inputMethod,

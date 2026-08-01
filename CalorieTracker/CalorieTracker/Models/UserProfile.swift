@@ -83,6 +83,7 @@ final class UserProfile {
     var hasCompletedOnboarding: Bool
     var waterGoalMl: Int
     var weeklyExerciseGoalMinutes: Int
+    var stepGoal: Int = 6000
     var appearanceRaw: String
     var createdAt: Date
 
@@ -99,6 +100,7 @@ final class UserProfile {
         hasCompletedOnboarding: Bool = false,
         waterGoalMl: Int = 2000,
         weeklyExerciseGoalMinutes: Int = 150,
+        stepGoal: Int = 6000,
         appearance: AppearanceMode = .light
     ) {
         self.id = UUID()
@@ -114,6 +116,7 @@ final class UserProfile {
         self.hasCompletedOnboarding = hasCompletedOnboarding
         self.waterGoalMl = waterGoalMl
         self.weeklyExerciseGoalMinutes = weeklyExerciseGoalMinutes
+        self.stepGoal = stepGoal
         self.appearanceRaw = appearance.rawValue
         self.createdAt = Date()
     }

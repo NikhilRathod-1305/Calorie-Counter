@@ -12,7 +12,6 @@ struct TrackerPlaceholderView: View {
     @State private var stepsUnavailable = false
     @State private var showingLogWeight = false
 
-    private let stepGoal = 10_000
     private let waterStep = 250
 
     private var profile: UserProfile { profiles.first ?? UserProfile() }
@@ -24,7 +23,7 @@ struct TrackerPlaceholderView: View {
     private var waterMl: Int { viewedWater.reduce(0) { $0 + $1.milliliters } }
     private var waterFraction: Double { min(1, Double(waterMl) / Double(max(1, profile.waterGoalMl))) }
 
-    private var stepFraction: Double { min(1, Double(steps ?? 0) / Double(stepGoal)) }
+    private var stepFraction: Double { min(1, Double(steps ?? 0) / Double(max(1, profile.stepGoal))) }
 
     /// Weight as of the viewed date: the most recent entry on or before that day,
     /// falling back to the profile's current weight if nothing's logged yet.
@@ -174,39 +173,44 @@ struct TrackerPlaceholderView: View {
     // MARK: Steps
 
     private var stepsCard: some View {
-        card {
-            HStack(spacing: 16) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Step")
-                        .font(Theme.Font.text(15, weight: .semibold))
-                        .foregroundStyle(Theme.textPrimary)
-                    if stepsUnavailable {
-                        Text("Unavailable")
-                            .font(Theme.Font.display(18))
-                            .foregroundStyle(Theme.textFaint)
-                    } else {
-                        HStack(alignment: .lastTextBaseline, spacing: 3) {
-                            Text("\(steps ?? 0)")
-                                .font(Theme.Font.display(26))
-                                .foregroundStyle(Theme.textPrimary)
-                            Text("steps")
-                                .font(Theme.Font.text(13))
-                                .foregroundStyle(Theme.textSecondary)
+        NavigationLink {
+            StepDetailsView()
+        } label: {
+            card {
+                HStack(spacing: 16) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Step")
+                            .font(Theme.Font.text(15, weight: .semibold))
+                            .foregroundStyle(Theme.textPrimary)
+                        if stepsUnavailable {
+                            Text("Unavailable")
+                                .font(Theme.Font.display(18))
+                                .foregroundStyle(Theme.textFaint)
+                        } else {
+                            HStack(alignment: .lastTextBaseline, spacing: 3) {
+                                Text("\(steps ?? 0)")
+                                    .font(Theme.Font.display(26))
+                                    .foregroundStyle(Theme.textPrimary)
+                                Text("steps")
+                                    .font(Theme.Font.text(13))
+                                    .foregroundStyle(Theme.textSecondary)
+                            }
                         }
+                        Text("/ \(profile.stepGoal) steps")
+                            .font(Theme.Font.text(12))
+                            .foregroundStyle(Theme.textFaint)
                     }
-                    Text("/ \(stepGoal) steps")
-                        .font(Theme.Font.text(12))
-                        .foregroundStyle(Theme.textFaint)
-                }
 
-                Spacer(minLength: 0)
+                    Spacer(minLength: 0)
 
-                if !stepsUnavailable {
-                    GaugeDialView(progress: stepFraction)
-                        .frame(width: 84, height: 84)
+                    if !stepsUnavailable {
+                        GaugeDialView(progress: stepFraction)
+                            .frame(width: 84, height: 84)
+                    }
                 }
             }
         }
+        .buttonStyle(.plain)
     }
 
     private func loadSteps() async {

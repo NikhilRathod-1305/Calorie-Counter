@@ -11,6 +11,7 @@ struct HomeDashboardView: View {
     @State private var sheetMealType: MealType?
     @State private var editingMealEntry: MealEntry?
     @State private var toastMessage: String?
+    @State private var showingMonthCalendar = false
 
     private var isToday: Bool { Calendar.current.isDateInToday(viewedDate) }
     private var profile: UserProfile { profiles.first ?? UserProfile() }
@@ -54,7 +55,7 @@ struct HomeDashboardView: View {
 
                 ScrollView {
                     VStack(spacing: 16) {
-                        DateStripPicker(selectedDate: $viewedDate, progress: calorieProgress)
+                        dateStripSection
 
                         VStack(spacing: 16) {
                             CalorieRingCard(
@@ -113,6 +114,49 @@ struct HomeDashboardView: View {
             .presentationDragIndicator(.hidden)
             .presentationBackground(.clear)
         }
+    }
+
+    // MARK: Header + date strip + expandable month calendar
+
+    private var dateStripSection: some View {
+        VStack(spacing: 0) {
+            if showingMonthCalendar {
+                MonthCalendarView(selectedDate: $viewedDate, progress: calorieProgress)
+                    .padding(16)
+                    .padding(.bottom, 4)
+                    .transition(.opacity)
+            } else {
+                DateStripPicker(
+                    selectedDate: $viewedDate,
+                    progress: calorieProgress,
+                    showsHeader: false,
+                    wrapsInCard: false
+                )
+                .padding(.horizontal, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 4)
+                .transition(.opacity)
+            }
+
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                    showingMonthCalendar.toggle()
+                }
+            } label: {
+                Image(systemName: showingMonthCalendar ? "chevron.up" : "chevron.down")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(Theme.textFaint)
+                    .frame(width: 60, height: 28)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .frame(maxWidth: .infinity)
+            .padding(.bottom, 8)
+        }
+        .background(Theme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.large))
+        .shadow(color: Color.black.opacity(0.06), radius: 10, x: 0, y: 4)
+        .padding(.horizontal, 16)
     }
 
     private func showToast(_ message: String) {

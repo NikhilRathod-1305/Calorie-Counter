@@ -22,14 +22,14 @@ struct GaugeDialView: View {
             ZStack {
                 Circle()
                     .trim(from: 0, to: sweepAngle / 360)
-                    .stroke(Theme.hairline, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                    .stroke(Theme.hairline, style: StrokeStyle(lineWidth: 12, lineCap: .round))
                     .rotationEffect(.degrees(startAngle))
                     .frame(width: outerRadius * 2, height: outerRadius * 2)
                     .position(center)
 
                 Circle()
                     .trim(from: 0, to: (sweepAngle / 360) * max(0, min(1, progress)))
-                    .stroke(color, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                    .stroke(color, style: StrokeStyle(lineWidth: 12, lineCap: .round))
                     .rotationEffect(.degrees(startAngle))
                     .frame(width: outerRadius * 2, height: outerRadius * 2)
                     .position(center)
@@ -39,7 +39,7 @@ struct GaugeDialView: View {
                     let angle = Angle.degrees(startAngle + sweepAngle * Double(i) / Double(tickCount))
                     Capsule()
                         .fill(Theme.textFaint.opacity(0.7))
-                        .frame(width: 1.5, height: 6)
+                        .frame(width: 2.5, height: 7)
                         .rotationEffect(angle + .degrees(90))
                         .position(
                             x: center.x + cos(angle.radians) * tickRadius,
@@ -53,7 +53,7 @@ struct GaugeDialView: View {
 
                 Circle()
                     .fill(color)
-                    .frame(width: 7, height: 7)
+                    .frame(width: 10, height: 10)
                     .position(center)
             }
         }
@@ -76,7 +76,7 @@ struct GaugeDialView: View {
             path.move(to: center)
             path.addLine(to: CGPoint(x: center.x + cos(angle.radians) * radius, y: center.y + sin(angle.radians) * radius))
         }
-        .stroke(color, style: StrokeStyle(lineWidth: 3, lineCap: .round))
+        .stroke(color, style: StrokeStyle(lineWidth: 5, lineCap: .round))
         .animation(.spring(response: 0.6, dampingFraction: 0.8), value: progress)
     }
 }

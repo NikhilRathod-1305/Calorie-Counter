@@ -40,4 +40,36 @@ enum HealthKitStepsService {
             store.execute(query)
         }
     }
+
+    /// Daily step totals from `start` through today, keyed by the start-of-day `Date`.
+    static func dailySteps(from start: Date) async throws -> [Date: Int] {
+        guard isAvailable else { return [:] }
+        let cal = Calendar.current
+        let anchor = cal.startOfDay(for: start)
+        let interval = DateComponents(day: 1)
+        let predicate = HKQuery.predicateForSamples(withStart: anchor, end: Date(), options: .strictStartDate)
+
+        return try await withCheckedThrowingContinuation { continuation in
+            let query = HKStatisticsCollectionQuery(
+                quantityType: stepType,
+                quantitySamplePredicate: predicate,
+                options: .cumulativeSum,
+                anchorDate: anchor,
+                intervalComponents: interval
+            )
+            query.initialResultsHandler = { _, results, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                var totals: [Date: Int] = [:]
+                results?.enumerateStatistics(from: anchor, to: Date()) { statistics, _ in
+                    let sum = statistics.sumQuantity()?.doubleValue(for: .count()) ?? 0
+                    totals[cal.startOfDay(for: statistics.startDate)] = Int(sum)
+                }
+                continuation.resume(returning: totals)
+            }
+            store.execute(query)
+        }
+    }
 }

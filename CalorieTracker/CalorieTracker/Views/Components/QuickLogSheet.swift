@@ -14,7 +14,7 @@ struct QuickLogSheet: View {
     private var profile: UserProfile { profiles.first ?? UserProfile() }
 
     var body: some View {
-        BottomSheetContainer(title: "Quick Log", subtitle: "Choose an entry type", onClose: onClose) {
+        BottomSheetContainer(title: "Quick Log", subtitle: "Choose an entry type", translucent: true, onClose: onClose) {
             GlassEffectContainer(spacing: 10) {
                 LazyVGrid(columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10) {
                     emojiTile(emoji: "🍽️", label: "Log Food", color: Theme.secondary) { activeMode = .browse }
@@ -81,7 +81,7 @@ struct QuickLogSheet: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 20)
-            .glassCardAlt(RoundedRectangle(cornerRadius: Theme.Radius.medium))
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: Theme.Radius.medium))
         }
         .buttonStyle(.plain)
     }
@@ -99,7 +99,7 @@ struct QuickLogSheet: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 20)
-            .glassCardAlt(RoundedRectangle(cornerRadius: Theme.Radius.medium))
+            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: Theme.Radius.medium))
         }
         .buttonStyle(.plain)
     }

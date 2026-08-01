@@ -133,21 +133,20 @@ struct TrackerPlaceholderView: View {
 
                         Spacer(minLength: 0)
 
-                        DropletFillView(fraction: waterFraction)
-                            .frame(width: 60, height: 70)
-
-                        // Reserve visual space for the +/- buttons drawn on top.
-                        Color.clear.frame(width: 32)
+                        // Reserve visual space for the droplet + +/- buttons drawn on top.
+                        Color.clear.frame(width: 148, height: 70)
                     }
                 }
             }
             .buttonStyle(.plain)
 
-            VStack(spacing: 8) {
-                waterStepButton(icon: "plus") { adjustWater(by: waterStep) }
+            HStack(spacing: 12) {
                 waterStepButton(icon: "minus") { adjustWater(by: -waterStep) }
+                DropletFillView(fraction: waterFraction)
+                    .frame(width: 60, height: 70)
+                waterStepButton(icon: "plus") { adjustWater(by: waterStep) }
             }
-            .padding(.trailing, 32)
+            .padding(.trailing, 16)
         }
     }
 
@@ -156,8 +155,9 @@ struct TrackerPlaceholderView: View {
             Image(systemName: icon)
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Theme.water)
-                .frame(width: 32, height: 32)
-                .overlay(Circle().stroke(Theme.water, lineWidth: 1.5))
+                .frame(width: 44, height: 44)
+                .contentShape(Circle())
+                .overlay(Circle().stroke(Theme.water, lineWidth: 1.5).padding(6))
         }
         .buttonStyle(.plain)
     }

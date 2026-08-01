@@ -45,7 +45,7 @@ struct WaterHistoryView: View {
         .background(Theme.groupedBackground.ignoresSafeArea())
         .navigationTitle("Water Intake History")
         .navigationBarTitleDisplayMode(.inline)
-        .hidesTabBar()
+        .toolbar(.hidden, for: .tabBar)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {

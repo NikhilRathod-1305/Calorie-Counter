@@ -86,7 +86,7 @@ struct WaterDetailsView: View {
         .background(Theme.groupedBackground.ignoresSafeArea())
         .navigationTitle("Water Tracker")
         .navigationBarTitleDisplayMode(.inline)
-        .hidesTabBar()
+        .toolbar(.hidden, for: .tabBar)
         .safeAreaInset(edge: .bottom) {
             drinkBar
         }
@@ -158,11 +158,12 @@ struct WaterDetailsView: View {
                 Image(systemName: showingMonthCalendar ? "chevron.up" : "chevron.down")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(Theme.textFaint)
-                    .frame(width: 32, height: 24)
+                    .frame(width: 60, height: 28)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .frame(maxWidth: .infinity)
-            .padding(.bottom, 4)
+            .padding(.bottom, 8)
         }
         .background(Theme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.large))

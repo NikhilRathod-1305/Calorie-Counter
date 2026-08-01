@@ -18,9 +18,15 @@ enum HealthKitStepsService {
     }
 
     static func todaySteps() async throws -> Int {
+        try await steps(on: Date())
+    }
+
+    static func steps(on day: Date) async throws -> Int {
         guard isAvailable else { return 0 }
-        let start = Calendar.current.startOfDay(for: Date())
-        let predicate = HKQuery.predicateForSamples(withStart: start, end: Date(), options: .strictStartDate)
+        let cal = Calendar.current
+        let start = cal.startOfDay(for: day)
+        let end = min(cal.date(byAdding: .day, value: 1, to: start) ?? Date(), Date())
+        let predicate = HKQuery.predicateForSamples(withStart: start, end: end, options: .strictStartDate)
 
         return try await withCheckedThrowingContinuation { continuation in
             let query = HKStatisticsQuery(quantityType: stepType, quantitySamplePredicate: predicate, options: .cumulativeSum) { _, statistics, error in

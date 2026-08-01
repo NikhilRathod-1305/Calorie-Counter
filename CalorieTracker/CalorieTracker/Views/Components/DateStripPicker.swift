@@ -11,6 +11,18 @@ struct DateStripPicker: View {
     @Binding var selectedDate: Date
     /// Returns 0...1 progress for a given day, used to draw that day's ring.
     var progress: (Date) -> Double = { _ in 0 }
+    /// When false, omits the "Month Year" label + prev/next chevrons, showing
+    /// just the week row — for callers that build their own header above it.
+    var showsHeader: Bool = true
+    /// When false, omits the card background/padding so a caller can merge
+    /// this strip visually with its own surrounding card.
+    var wrapsInCard: Bool = true
+    /// Color used for the selected day (text, ring stroke, highlight fill).
+    /// Defaults to the app's green accent; callers can override to match a
+    /// feature's own color (e.g. blue for the water screen).
+    var tint: Color = Theme.accent
+    var tintSoft: Color = Theme.accentSoft
+    var tintGradient: LinearGradient = Theme.accentGradient
 
     @State private var visibleWeekOffset: Int = 0
 
@@ -27,13 +39,15 @@ struct DateStripPicker: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
-            HStack {
-                Text(monthLabel(for: visibleWeekStart))
-                    .font(Theme.Font.display(20))
-                    .foregroundStyle(Theme.textPrimary)
-                Spacer()
-                navButton(icon: "chevron.left") { shiftVisibleWeek(by: -1) }
-                navButton(icon: "chevron.right") { shiftVisibleWeek(by: 1) }
+            if showsHeader {
+                HStack {
+                    Text(monthLabel(for: visibleWeekStart))
+                        .font(Theme.Font.display(20))
+                        .foregroundStyle(Theme.textPrimary)
+                    Spacer()
+                    navButton(icon: "chevron.left") { shiftVisibleWeek(by: -1) }
+                    navButton(icon: "chevron.right") { shiftVisibleWeek(by: 1) }
+                }
             }
 
             TabView(selection: $visibleWeekOffset) {
@@ -45,9 +59,7 @@ struct DateStripPicker: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
             .frame(height: 76)
         }
-        .padding(16)
-        .glassCard(RoundedRectangle(cornerRadius: Theme.Radius.large))
-        .padding(.horizontal, 16)
+        .modifier(OptionalCardWrap(wraps: wrapsInCard))
         .onAppear {
             visibleWeekOffset = weekOffset(for: selectedDate)
         }
@@ -105,18 +117,18 @@ struct DateStripPicker: View {
         return VStack(spacing: 6) {
             Text(weekdayLabel(day))
                 .font(Theme.Font.text(11, weight: .medium))
-                .foregroundStyle(isSelected ? Theme.accent : Theme.textFaint)
+                .foregroundStyle(isSelected ? tint : Theme.textFaint)
 
             ZStack {
                 RingGaugeView(
                     progress: isFuture ? 0 : dayProgress,
                     lineWidth: 2.5,
                     trackColor: Theme.hairline,
-                    progressGradient: Theme.accentGradient
+                    progressGradient: tintGradient
                 )
                 Text("\(calendar.component(.day, from: day))")
                     .font(Theme.Font.text(14, weight: .semibold))
-                    .foregroundStyle(isSelected ? Theme.accent : (isFuture ? Theme.textFaint : Theme.textPrimary))
+                    .foregroundStyle(isSelected ? tint : (isFuture ? Theme.textFaint : Theme.textPrimary))
             }
             .frame(width: 34, height: 34)
         }
@@ -124,11 +136,11 @@ struct DateStripPicker: View {
         .padding(.vertical, 8)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(isSelected ? Theme.accentSoft : Color.clear)
+                .fill(isSelected ? tintSoft : Color.clear)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 14)
-                .stroke(isSelected ? Theme.accent : Color.clear, lineWidth: 1.5)
+                .stroke(isSelected ? tint : Color.clear, lineWidth: 1.5)
         )
         .contentShape(RoundedRectangle(cornerRadius: 14))
         .opacity(isFuture ? 0.4 : 1)
@@ -144,5 +156,20 @@ struct DateStripPicker: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEE"
         return formatter.string(from: date)
+    }
+}
+
+private struct OptionalCardWrap: ViewModifier {
+    let wraps: Bool
+
+    func body(content: Content) -> some View {
+        if wraps {
+            content
+                .padding(16)
+                .glassCard(RoundedRectangle(cornerRadius: Theme.Radius.large))
+                .padding(.horizontal, 16)
+        } else {
+            content
+        }
     }
 }

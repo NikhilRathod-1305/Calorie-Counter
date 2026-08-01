@@ -64,6 +64,7 @@ private struct MainTabView: View {
     @State private var toastMessage: String?
     @State private var barWidth: CGFloat = 0
     @State private var isDragging = false
+    @State private var hidesTabBar = false
     @GestureState private var dragTranslation: CGFloat = 0
 
     private let tabs = RootTab.allCases
@@ -80,12 +81,18 @@ private struct MainTabView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-            HStack(alignment: .center, spacing: 10) {
-                tabBar
-                fab
+            if !hidesTabBar {
+                HStack(alignment: .center, spacing: 10) {
+                    tabBar
+                    fab
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
+                .transition(.opacity)
             }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 8)
+        }
+        .onPreferenceChange(HideTabBarPreferenceKey.self) { hidden in
+            withAnimation(.easeInOut(duration: 0.2)) { hidesTabBar = hidden }
         }
         .toast(toastMessage)
         .sheet(isPresented: $showingQuickLog) {

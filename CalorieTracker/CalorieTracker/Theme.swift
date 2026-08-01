@@ -48,7 +48,14 @@ enum Theme {
     // MARK: Feature accents
     static let steps = Color(light: 0xFF8A34, dark: 0xFF9A4D)
     static let water = Color(light: 0x2F9CE0, dark: 0x4FB6F5)
+    static let waterSoft = Color(light: 0x2F9CE0, dark: 0x4FB6F5, opacity: 0.14)
     static let onWater = Color(light: 0xFFFFFF, dark: 0x00263B)
+
+    static let waterGradient = LinearGradient(
+        colors: [Color(hex: 0x4FB6F5), Color(hex: 0x2F9CE0)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
     static let exercise = Color(light: 0xFF8A34, dark: 0xFF9A4D)
     static let weight = Color(light: 0x2F7CE0, dark: 0x5B9CFF)
     static let weightSoft = Color(light: 0x2F7CE0, dark: 0x5B9CFF, opacity: 0.14)

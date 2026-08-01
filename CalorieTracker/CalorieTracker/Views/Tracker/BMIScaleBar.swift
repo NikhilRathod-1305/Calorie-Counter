@@ -1,46 +1,43 @@
 import SwiftUI
 
-/// Horizontal BMI scale: a segmented green→yellow→orange gradient bar with a
-/// downward-pointing triangle marking the current BMI, and tick labels below.
+/// BMI scale shown as discrete colored pill segments (underweight → obese) with a
+/// small triangle marker positioned under the segment matching the current BMI.
 struct BMIScaleBar: View {
     let bmi: Double
 
-    private let ticks: [Double] = [15, 16, 18.5, 25, 30, 35, 40]
-    private let minValue: Double = 15
-    private let maxValue: Double = 40
+    private let segmentColors: [Color] = [
+        Color(hex: 0x1B3A8A), Color(hex: 0x2F63C7), Color(hex: 0x4A90E2),
+        Color(hex: 0x4CAF50), Color(hex: 0xF0C43A), Color(hex: 0xF0A430), Color(hex: 0xE8422E)
+    ]
 
-    private var fraction: CGFloat {
-        CGFloat(min(max(bmi, minValue), maxValue) - minValue) / CGFloat(maxValue - minValue)
+    /// BMI thresholds each segment boundary represents (severe underweight ... severe obese).
+    private let thresholds: [Double] = [15, 16, 18.5, 25, 30, 35, 40, 45]
+
+    private var activeSegmentIndex: Int {
+        for i in 0..<(thresholds.count - 1) {
+            if bmi < thresholds[i + 1] { return i }
+        }
+        return segmentColors.count - 1
     }
 
     var body: some View {
-        VStack(spacing: 6) {
+        VStack(spacing: 4) {
             GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    LinearGradient(
-                        colors: [
-                            Color(hex: 0x1B7A3D), Color(hex: 0x4CAF50), Color(hex: 0x9ACD32),
-                            Color(hex: 0xE8D93A), Color(hex: 0xF0A430), Color(hex: 0xE8642E)
-                        ],
-                        startPoint: .leading, endPoint: .trailing
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
-
-                    Image(systemName: "arrowtriangle.down.fill")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Theme.textPrimary)
-                        .offset(x: geo.size.width * fraction - 6, y: -14)
-                }
+                let segmentWidth = geo.size.width / CGFloat(segmentColors.count)
+                Image(systemName: "triangle.fill")
+                    .font(.system(size: 9))
+                    .foregroundStyle(Theme.accent)
+                    .rotationEffect(.degrees(180))
+                    .position(x: segmentWidth * (CGFloat(activeSegmentIndex) + 0.5), y: 6)
             }
-            .frame(height: 8)
-            .padding(.top, 14)
+            .frame(height: 12)
 
-            HStack {
-                ForEach(ticks, id: \.self) { tick in
-                    Text(tick.truncatingRemainder(dividingBy: 1) == 0 ? "\(Int(tick))" : String(format: "%.1f", tick))
-                        .font(Theme.Font.text(10))
-                        .foregroundStyle(Theme.textFaint)
-                    if tick != ticks.last { Spacer(minLength: 0) }
+            HStack(spacing: 4) {
+                ForEach(Array(segmentColors.enumerated()), id: \.offset) { index, color in
+                    Capsule()
+                        .fill(color)
+                        .opacity(index == activeSegmentIndex ? 1 : 0.85)
+                        .frame(height: 10)
                 }
             }
         }

@@ -26,8 +26,8 @@ struct StepDetailsView: View {
             VStack(alignment: .leading, spacing: 16) {
                 dateStripSection
 
-                VStack(spacing: -8) {
-                    GaugeDialView(progress: fraction)
+                VStack(spacing: -28) {
+                    StepGaugeDialView(progress: fraction)
                         .frame(width: 190, height: 190)
 
                     VStack(spacing: 4) {

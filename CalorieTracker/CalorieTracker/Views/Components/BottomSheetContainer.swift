@@ -47,21 +47,19 @@ struct BottomSheetContainer<Content: View>: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 30)
 
-            if translucent {
-                Spacer(minLength: 0)
-            }
+            Spacer(minLength: 0)
         }
         .frame(maxWidth: .infinity)
-        .frame(maxHeight: translucent ? .infinity : nil)
+        .frame(maxHeight: .infinity)
         .background {
             if !translucent {
-                UnevenRoundedRectangle(topLeadingRadius: Theme.Radius.sheet, topTrailingRadius: Theme.Radius.sheet)
-                    .fill(Theme.cardBackground)
+                Theme.cardBackground
             }
         }
         .clipShape(
             UnevenRoundedRectangle(topLeadingRadius: Theme.Radius.sheet, topTrailingRadius: Theme.Radius.sheet)
         )
+        .ignoresSafeArea(edges: .bottom)
         .shadow(color: Color.black.opacity(translucent ? 0 : 0.06), radius: 10, x: 0, y: 4)
     }
 }

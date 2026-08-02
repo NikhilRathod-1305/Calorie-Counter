@@ -3,7 +3,6 @@ import SwiftData
 
 struct ProfileView: View {
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.dismiss) private var dismiss
     @Query private var profiles: [UserProfile]
 
     @State private var showingLogWeight = false
@@ -71,11 +70,6 @@ struct ProfileView: View {
         .background(Theme.groupedBackground.ignoresSafeArea())
         .navigationTitle("Profile")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
-                Button("Done") { dismiss() }
-            }
-        }
         .sheet(isPresented: $showingLogWeight) {
             LogWeightSheet(
                 initialWeight: profile.weightKg,
@@ -95,7 +89,14 @@ struct ProfileView: View {
 
     private var header: some View {
         HStack(spacing: 14) {
-            AppLogoMark(size: 52)
+            Circle()
+                .fill(Theme.accent.opacity(0.15))
+                .frame(width: 52, height: 52)
+                .overlay(
+                    Image(systemName: "person.fill")
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(Theme.accent)
+                )
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(String(format: "%.1f", profile.weightKg))kg")
                     .font(Theme.Font.display(20))

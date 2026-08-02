@@ -17,9 +17,13 @@ struct CalorieTrackerApp: App {
 
         let profileDescriptor = FetchDescriptor<UserProfile>()
         if (try? context.fetchCount(profileDescriptor)) == 0 {
-            context.insert(UserProfile())
+            let profile = UserProfile()
+            profile.hasCompletedOnboarding = true
+            context.insert(profile)
             try? context.save()
         }
+
+        DebugDataSeeder.seedWeekIfNeeded(context: context)
     }
 
     var body: some Scene {

@@ -41,9 +41,8 @@ struct CupSizeSwitcherSheet: View {
     private func sizeCell(_ size: CupSize) -> some View {
         let isSelected = selectedSize == size.rawValue && selectedDrinkType == .water
         return VStack(spacing: 8) {
-            Image(systemName: "cup.and.saucer.fill")
-                .font(.system(size: 22))
-                .foregroundStyle(Theme.water)
+            CupIconView(kind: size.vesselKind, showBubbles: true)
+                .padding(10)
                 .frame(width: 56, height: 56)
                 .background(Theme.cardBackgroundAlt, in: Circle())
                 .overlay(Circle().stroke(isSelected ? Theme.water : Color.clear, lineWidth: 2))

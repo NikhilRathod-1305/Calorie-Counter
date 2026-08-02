@@ -11,6 +11,7 @@ struct TrackerPlaceholderView: View {
     @State private var steps: Int?
     @State private var stepsUnavailable = false
     @State private var showingLogWeight = false
+    @State private var showingEditBMI = false
 
     private let waterStep = 250
 
@@ -87,6 +88,23 @@ struct TrackerPlaceholderView: View {
                 }
             )
             .presentationDetents([.height(260)])
+            .presentationDragIndicator(.hidden)
+            .presentationBackground(.clear)
+        }
+        .sheet(isPresented: $showingEditBMI) {
+            EditBMISheet(
+                currentHeightCm: profile.heightCm,
+                currentWeightKg: currentWeight,
+                onClose: { showingEditBMI = false },
+                onSave: { newHeight, newWeight in
+                    profile.heightCm = newHeight
+                    profile.weightKg = newWeight
+                    modelContext.insert(WeightLogEntry(weightKg: newWeight, date: Date()))
+                    try? modelContext.save()
+                    showingEditBMI = false
+                }
+            )
+            .presentationDetents([.height(430)])
             .presentationDragIndicator(.hidden)
             .presentationBackground(.clear)
         }
@@ -229,68 +247,74 @@ struct TrackerPlaceholderView: View {
     // MARK: Weight
 
     private var weightCard: some View {
-        card {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Weight")
-                            .font(Theme.Font.text(15, weight: .semibold))
-                            .foregroundStyle(Theme.textPrimary)
-                        HStack(spacing: 8) {
-                            HStack(alignment: .lastTextBaseline, spacing: 3) {
-                                Text(String(format: "%.1f", currentWeight))
-                                    .font(Theme.Font.display(26))
-                                    .foregroundStyle(Theme.textPrimary)
-                                Text("kg")
-                                    .font(Theme.Font.text(13))
-                                    .foregroundStyle(Theme.textSecondary)
-                            }
-                            if weightDelta != 0 {
-                                HStack(spacing: 3) {
-                                    Image(systemName: weightDelta < 0 ? "checkmark.circle.fill" : "arrow.up.circle.fill")
-                                        .font(.system(size: 12))
-                                    Text("\(weightDelta > 0 ? "+" : "")\(String(format: "%.1f", weightDelta)) kg")
-                                        .font(Theme.Font.text(12, weight: .semibold))
+        ZStack(alignment: .topTrailing) {
+            NavigationLink {
+                WeightDetailsView()
+            } label: {
+                card {
+                    VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("Weight")
+                                .font(Theme.Font.text(15, weight: .semibold))
+                                .foregroundStyle(Theme.textPrimary)
+                            HStack(spacing: 8) {
+                                HStack(alignment: .lastTextBaseline, spacing: 3) {
+                                    Text(String(format: "%.1f", currentWeight))
+                                        .font(Theme.Font.display(26))
+                                        .foregroundStyle(Theme.textPrimary)
+                                    Text("kg")
+                                        .font(Theme.Font.text(13))
+                                        .foregroundStyle(Theme.textSecondary)
                                 }
-                                .foregroundStyle(weightDelta < 0 ? Theme.success : Theme.weight)
+                                if weightDelta != 0 {
+                                    HStack(spacing: 3) {
+                                        Image(systemName: weightDelta < 0 ? "checkmark.circle.fill" : "arrow.up.circle.fill")
+                                            .font(.system(size: 12))
+                                        Text("\(weightDelta > 0 ? "+" : "")\(String(format: "%.1f", weightDelta)) kg")
+                                            .font(Theme.Font.text(12, weight: .semibold))
+                                    }
+                                    .foregroundStyle(weightDelta < 0 ? Theme.success : Theme.weight)
+                                }
                             }
                         }
-                    }
 
-                    Spacer(minLength: 0)
+                        RoundedRectangle(cornerRadius: 7)
+                            .fill(Theme.hairline)
+                            .frame(height: 14)
+                            .overlay(alignment: .leading) {
+                                GeometryReader { geo in
+                                    RoundedRectangle(cornerRadius: 7)
+                                        .fill(Theme.secondary)
+                                        .frame(width: geo.size.width * weightFraction)
+                                }
+                            }
 
-                    Button {
-                        showingLogWeight = true
-                    } label: {
-                        Text("Update")
-                            .font(Theme.Font.text(13, weight: .semibold))
-                            .foregroundStyle(Theme.onAccent)
-                            .padding(.horizontal, 18)
-                            .padding(.vertical, 9)
-                            .background(Theme.secondary, in: Capsule())
-                    }
-                    .buttonStyle(.plain)
-                }
-
-                RoundedRectangle(cornerRadius: 7)
-                    .fill(Theme.hairline)
-                    .frame(height: 14)
-                    .overlay(alignment: .leading) {
-                        GeometryReader { geo in
-                            RoundedRectangle(cornerRadius: 7)
-                                .fill(Theme.secondary)
-                                .frame(width: geo.size.width * weightFraction)
+                        HStack {
+                            Text("Starting: \(String(format: "%.1f", startWeight)) kg")
+                            Spacer()
+                            Text("Goal: \(String(format: "%.1f", profile.targetWeightKg)) kg")
                         }
+                        .font(Theme.Font.text(11))
+                        .foregroundStyle(Theme.textFaint)
                     }
-
-                HStack {
-                    Text("Starting: \(String(format: "%.1f", startWeight)) kg")
-                    Spacer()
-                    Text("Goal: \(String(format: "%.1f", profile.targetWeightKg)) kg")
+                    .padding(.trailing, 80)
                 }
-                .font(Theme.Font.text(11))
-                .foregroundStyle(Theme.textFaint)
             }
+            .buttonStyle(.plain)
+
+            Button {
+                showingLogWeight = true
+            } label: {
+                Text("Update")
+                    .font(Theme.Font.text(13, weight: .semibold))
+                    .foregroundStyle(Theme.onAccent)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 9)
+                    .background(Theme.secondary, in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 16)
+            .padding(.trailing, 32)
         }
     }
 
@@ -314,7 +338,7 @@ struct TrackerPlaceholderView: View {
                 }
                 Spacer(minLength: 0)
                 Button {
-                    showingLogWeight = true
+                    showingEditBMI = true
                 } label: {
                     Image(systemName: "pencil")
                         .font(.system(size: 13, weight: .semibold))

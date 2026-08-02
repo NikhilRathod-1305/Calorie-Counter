@@ -67,7 +67,14 @@ struct MoreView: View {
                         ProfileView()
                     } label: {
                         HStack {
-                            AppLogoMark(size: 48)
+                            Circle()
+                                .fill(Theme.accent.opacity(0.15))
+                                .frame(width: 48, height: 48)
+                                .overlay(
+                                    Image(systemName: "person.fill")
+                                        .font(.system(size: 20, weight: .semibold))
+                                        .foregroundStyle(Theme.accent)
+                                )
                             VStack(alignment: .leading, spacing: 2) {
                                 Text("\(String(format: "%.1f", profile.weightKg))kg")
                                     .font(Theme.Font.text(15, weight: .semibold))

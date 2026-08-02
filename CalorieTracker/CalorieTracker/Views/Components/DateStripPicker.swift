@@ -27,7 +27,7 @@ struct DateStripPicker: View {
     @State private var visibleWeekOffset: Int = 0
 
     private let calendar = Calendar.current
-    private let weekOffsetRange = -520...520 // ~10 years back/forward
+    private let weekOffsetRange = -156...156 // ~3 years back/forward
 
     private var referenceWeekStart: Date {
         calendar.dateInterval(of: .weekOfYear, for: Date())?.start ?? Date()

@@ -3,10 +3,10 @@ import UIKit
 
 enum Theme {
     // MARK: Backgrounds
-    static let background = Color(light: 0xF6F8F6, dark: 0x0E1512)
-    static let groupedBackground = Color(light: 0xF1F4F1, dark: 0x0E1512)
-    static let cardBackground = Color(light: 0xFFFFFF, dark: 0x18211C)
-    static let cardBackgroundAlt = Color(light: 0xF4F7F4, dark: 0x141C18)
+    static let background = Color(light: 0xF6F8F6, dark: 0x121212)
+    static let groupedBackground = Color(light: 0xF1F4F1, dark: 0x121212)
+    static let cardBackground = Color(light: 0xFFFFFF, dark: 0x1C1C1E)
+    static let cardBackgroundAlt = Color(light: 0xF4F7F4, dark: 0x18181A)
 
     // MARK: Text
     static let textPrimary = Color(light: 0x14231A, dark: 0xEAF2ED)
@@ -29,6 +29,10 @@ enum Theme {
         endPoint: .bottomTrailing
     )
 
+    /// Muted sage green used for calorie chart lines/bars/callouts — softer than
+    /// the primary brand accent, matching the reference chart's understated palette.
+    static let sage = Color(light: 0x8CC152, dark: 0x9ACB65)
+
     // MARK: Secondary (warm orange — calories / food / energy)
     static let secondary = Color(light: 0xFF8A34, dark: 0xFF9A4D)
     static let secondarySoft = Color(light: 0xFF8A34, dark: 0xFF9A4D, opacity: 0.14)
@@ -41,9 +45,9 @@ enum Theme {
     )
 
     // MARK: Macro colors
-    static let proteinColor = Color(light: 0x2F7CE0, dark: 0x5B9CFF)
-    static let carbColor = Color(light: 0xFF8A34, dark: 0xFF9A4D)
-    static let fatColor = Color(light: 0xE0435A, dark: 0xFF6B80)
+    static let proteinColor = Color(light: 0xFF8A34, dark: 0xFF9A4D)
+    static let carbColor = Color(light: 0xE0435A, dark: 0xFF6B80)
+    static let fatColor = Color(light: 0x2F7CE0, dark: 0x5B9CFF)
 
     // MARK: Feature accents
     static let steps = Color(light: 0xFF8A34, dark: 0xFF9A4D)
@@ -65,6 +69,10 @@ enum Theme {
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
+
+    static let bmi = Color(light: 0x8B3FE0, dark: 0xAD7BFF)
+    static let bmiSoft = Color(light: 0x8B3FE0, dark: 0xAD7BFF, opacity: 0.14)
+    static let onBMI = Color(light: 0xFFFFFF, dark: 0x1E0640)
 
     // MARK: Status
     static let success = Color(light: 0x2FA84F, dark: 0x4CD46B)

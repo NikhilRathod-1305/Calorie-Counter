@@ -2,7 +2,8 @@ import SwiftUI
 
 struct WaterWaveShape: Shape {
     var fraction: Double
-    var waveHeight: CGFloat = 5
+    var waveHeight: CGFloat = 7
+    var wavelengthScale: CGFloat = 1.6
     var phase: Double = 0
 
     var animatableData: Double {
@@ -19,8 +20,8 @@ struct WaterWaveShape: Shape {
         path.move(to: CGPoint(x: 0, y: rect.height))
         path.addLine(to: CGPoint(x: 0, y: level))
 
-        let wavelength = rect.width
-        let steps = 40
+        let wavelength = rect.width * wavelengthScale
+        let steps = 20
         for i in 0...steps {
             let x = rect.width * CGFloat(i) / CGFloat(steps)
             let relativeX = x / wavelength

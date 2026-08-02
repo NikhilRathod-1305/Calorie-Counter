@@ -176,11 +176,7 @@ struct WaterDetailsView: View {
 
     private func historyRow(_ entry: WaterLogEntry) -> some View {
         HStack(spacing: 12) {
-            Image(systemName: entry.drinkType.icon)
-                .font(.system(size: 16))
-                .foregroundStyle(entry.drinkType.tint)
-                .frame(width: 36, height: 36)
-                .background(Theme.cardBackgroundAlt, in: Circle())
+            DrinkIconBadge(type: entry.drinkType, milliliters: entry.milliliters)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(entry.drinkType.label)
@@ -212,11 +208,7 @@ struct WaterDetailsView: View {
             Button {
                 showingCupSwitcher = true
             } label: {
-                Image(systemName: lastDrinkType.icon)
-                    .font(.system(size: 18))
-                    .foregroundStyle(lastDrinkType.tint)
-                    .frame(width: 52, height: 52)
-                    .background(Theme.cardBackground, in: Circle())
+                DrinkIconBadge(type: lastDrinkType, milliliters: lastCupSize, size: 52, background: Theme.cardBackground)
                     .shadow(color: Color.black.opacity(0.06), radius: 6, x: 0, y: 2)
             }
             .buttonStyle(.plain)

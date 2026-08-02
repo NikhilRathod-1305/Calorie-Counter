@@ -16,7 +16,7 @@ struct MonthCalendarView: View {
     @State private var visibleMonthOffset: Int = 0
 
     private let calendar = Calendar.current
-    private let monthOffsetRange = -240...240 // ~20 years back/forward
+    private let monthOffsetRange = -36...36 // ~3 years back/forward
 
     private var referenceMonthStart: Date {
         calendar.dateInterval(of: .month, for: Date())?.start ?? Date()

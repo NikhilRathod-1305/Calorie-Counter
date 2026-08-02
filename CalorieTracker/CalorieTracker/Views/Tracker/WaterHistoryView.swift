@@ -11,11 +11,28 @@ struct WaterHistoryView: View {
     @State private var toastMessage: String?
     @State private var lastDeleted: (milliliters: Int, date: Date, drinkType: DrinkType)?
 
+    // Cached instead of recomputed in a plain `var` — this view re-renders on every
+    // pixel of a swipe-to-delete drag (via SwipeToDeleteRow's @State offset), and
+    // without caching that meant re-grouping/re-sorting all entries every frame.
+    @State private var cachedGroups: [(label: String, entries: [WaterLogEntry])] = []
+
     private let calendar = Calendar.current
 
-    private var groupedEntries: [(label: String, entries: [WaterLogEntry])] {
+    private static let timeFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "h:mm a"
+        return f
+    }()
+
+    private static let dayFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d, yyyy"
+        return f
+    }()
+
+    private func regroupEntries() {
         let groups = Dictionary(grouping: waterEntries) { calendar.startOfDay(for: $0.date) }
-        return groups.keys.sorted(by: >).map { day in
+        cachedGroups = groups.keys.sorted(by: >).map { day in
             let label: String
             if calendar.isDateInToday(day) { label = "Today, \(dateString(day))" }
             else if calendar.isDateInYesterday(day) { label = "Yesterday, \(dateString(day))" }
@@ -27,13 +44,13 @@ struct WaterHistoryView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                if groupedEntries.isEmpty {
+                if cachedGroups.isEmpty {
                     Text("No water logged yet")
                         .font(Theme.Font.text(13))
                         .foregroundStyle(Theme.textFaint)
                         .padding(.top, 60)
                 } else {
-                    ForEach(groupedEntries, id: \.label) { group in
+                    ForEach(cachedGroups, id: \.label) { group in
                         dayGroup(label: group.label, entries: group.entries)
                     }
                 }
@@ -55,6 +72,8 @@ struct WaterHistoryView: View {
                 }
             }
         }
+        .onAppear { regroupEntries() }
+        .onChange(of: waterEntries) { _, _ in regroupEntries() }
         .toast(toastMessage, actionTitle: lastDeleted != nil ? "Undo" : nil, action: undoDelete)
         .sheet(item: $editingEntry) { entry in
             LogWaterSheet(
@@ -114,11 +133,7 @@ struct WaterHistoryView: View {
             onDelete: { delete(entry) }
         ) {
             HStack(spacing: 12) {
-                Image(systemName: entry.drinkType.icon)
-                    .font(.system(size: 16))
-                    .foregroundStyle(entry.drinkType.tint)
-                    .frame(width: 36, height: 36)
-                    .background(Theme.cardBackgroundAlt, in: Circle())
+                DrinkIconBadge(type: entry.drinkType, milliliters: entry.milliliters)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(entry.drinkType.label)
@@ -165,14 +180,10 @@ struct WaterHistoryView: View {
     }
 
     private func timeString(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.dateFormat = "h:mm a"
-        return f.string(from: date)
+        Self.timeFormatter.string(from: date)
     }
 
     private func dateString(_ date: Date) -> String {
-        let f = DateFormatter()
-        f.dateFormat = "MMM d, yyyy"
-        return f.string(from: date)
+        Self.dayFormatter.string(from: date)
     }
 }

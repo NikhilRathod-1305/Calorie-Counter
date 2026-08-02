@@ -3,8 +3,9 @@ import SwiftData
 
 enum FoodListTab: String, CaseIterable {
     case recent = "Recent"
+    case indian = "Indian"
     case favorites = "Favorites"
-    case personal = "Personal"
+    case personal = "My Foods"
 }
 
 /// Search-first food browser matching the reference "Log food" screen:
@@ -50,11 +51,13 @@ struct FoodBrowseView: View {
 
     private var favoriteFoods: [FoodItem] { allFoods.filter(\.isFavorite) }
     private var personalFoods: [FoodItem] { allFoods.filter(\.isCustom) }
+    private var indianFoods: [FoodItem] { allFoods.filter { FoodLibrarySeeder.indianDishNames.contains($0.name) } }
 
     private var listedFoods: [FoodItem] {
         let base: [FoodItem]
         switch tab {
         case .recent: base = recentFoods
+        case .indian: base = indianFoods
         case .favorites: base = favoriteFoods
         case .personal: base = personalFoods
         }
@@ -214,8 +217,9 @@ struct FoodBrowseView: View {
     private var emptyMessage: String {
         switch tab {
         case .recent: return "No recent foods yet"
+        case .indian: return "No Indian dishes found"
         case .favorites: return "No favorites yet — tap the heart on a food to save it here"
-        case .personal: return "No personal foods yet — create one above"
+        case .personal: return "No foods added yet — create one above"
         }
     }
 

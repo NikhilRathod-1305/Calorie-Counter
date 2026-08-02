@@ -11,6 +11,31 @@ struct BottomSheetContainer<Content: View>: View {
     let onClose: () -> Void
     @ViewBuilder let content: Content
 
+    // A large-detent sheet's native drag-to-dismiss competes with any
+    // ScrollView inside it (the scroll view's own pan gesture wins once the
+    // touch starts over scrollable content), so swiping down from within the
+    // content often doesn't dismiss. This gives the grabber/header a
+    // guaranteed drag-to-dismiss area that always works regardless of what's
+    // happening in the content below.
+    @State private var dragOffset: CGFloat = 0
+    @GestureState private var isDragging = false
+
+    private var headerDragGesture: some Gesture {
+        DragGesture(minimumDistance: 4)
+            .updating($isDragging) { _, state, _ in state = true }
+            .onChanged { value in
+                guard value.translation.height > 0 else { return }
+                dragOffset = value.translation.height
+            }
+            .onEnded { value in
+                if value.translation.height > 80 || value.predictedEndTranslation.height > 200 {
+                    onClose()
+                } else {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) { dragOffset = 0 }
+                }
+            }
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             Capsule()
@@ -42,6 +67,8 @@ struct BottomSheetContainer<Content: View>: View {
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 16)
+            .contentShape(Rectangle())
+            .gesture(headerDragGesture)
 
             content
                 .padding(.horizontal, 20)
@@ -49,6 +76,8 @@ struct BottomSheetContainer<Content: View>: View {
 
             Spacer(minLength: 0)
         }
+        .offset(y: dragOffset)
+        .animation(isDragging ? nil : .spring(response: 0.3, dampingFraction: 0.85), value: dragOffset)
         .frame(maxWidth: .infinity)
         .frame(maxHeight: .infinity)
         .background {

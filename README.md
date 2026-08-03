@@ -2,6 +2,56 @@
 
 A native iOS calorie, macro, water, weight, and exercise tracker built with SwiftUI and SwiftData. Food can be logged manually, by browsing a local food library, by scanning a barcode (Open Food Facts), by taking/uploading a photo (Gemini vision), by voice (on-device speech-to-text + Gemini), or by free-text description (Gemini).
 
+## Screenshots
+
+App appearance follows the system by default and can be pinned to Light or Dark in **More → Appearance**.
+
+| Home | Tracker | Insights |
+|---|---|---|
+| ![Home dashboard, dark](docs/screenshots/home.png) | ![Tracker tab, dark](docs/screenshots/tracker.png) | ![Insights charts, dark](docs/screenshots/insights.png) |
+| ![Home dashboard, light](docs/screenshots/home_light.png) | ![Tracker tab, light](docs/screenshots/tracker_light.png) | ![Insights charts, light](docs/screenshots/insights_light.png) |
+
+| Quick Log | Browse foods | Profile |
+|---|---|---|
+| ![Quick Log entry types](docs/screenshots/quick_log.png) | ![Browse/search foods](docs/screenshots/log_food_browse.png) | ![Profile & goals](docs/screenshots/profile.png) |
+| | ![Browse/search foods, light](docs/screenshots/log_food_browse_light.png) | |
+
+| BMI gauge | Water history | Settings |
+|---|---|---|
+| ![BMI gauge](docs/screenshots/bmi_gauge.png) | ![Water intake history](docs/screenshots/water_history.png) | ![Settings / More tab](docs/screenshots/settings.png) |
+
+## How logging a meal works
+
+```mermaid
+flowchart TD
+    A["Tap + / Add tab"] --> B["Quick Log sheet"]
+    B --> C{Choose entry type}
+    C --> D["Log Food"]
+    C --> E["Barcode Scan"]
+    C --> F["Voice Log"]
+    C --> G["Scan Meal (photo)"]
+    C --> H["Water"]
+    C --> I["Workout"]
+
+    D --> D1["Browse local food library\nor search"]
+    D --> D2["Text description\n(parsed by Gemini)"]
+    E --> E1["Live camera reads barcode"]
+    E1 --> E2["Open Food Facts lookup"]
+    F --> F1["On-device speech-to-text"]
+    F1 --> F2["Gemini parses into food + macros"]
+    G --> G1["Live camera captures photo"]
+    G1 --> G2["Gemini vision estimates food + macros"]
+
+    D1 --> J["Editable result card\n(name, cal, macros)"]
+    D2 --> J
+    E2 --> J
+    F2 --> J
+    G2 --> J
+
+    J --> K["Add to today's diary\nunder Breakfast/Lunch/Dinner/Snack"]
+    K --> L["Home dashboard + Insights\nupdate immediately"]
+```
+
 ## Requirements
 
 - macOS with **Xcode 26** or later (the project targets iOS 26.0)

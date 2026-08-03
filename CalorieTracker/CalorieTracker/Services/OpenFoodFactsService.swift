@@ -3,13 +3,11 @@ import Foundation
 enum OpenFoodFactsError: LocalizedError {
     case notFound
     case network(String)
-    case badResponse
 
     var errorDescription: String? {
         switch self {
         case .notFound: return "No product found for that barcode. Try Text or Browse instead."
         case .network(let msg): return "Network error: \(msg)"
-        case .badResponse: return "Couldn't read product data."
         }
     }
 }
@@ -26,7 +24,9 @@ enum OpenFoodFactsService {
         }
 
         guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-            throw OpenFoodFactsError.network("status \((response as? HTTPURLResponse)?.statusCode ?? -1)")
+            let status = (response as? HTTPURLResponse)?.statusCode ?? -1
+            debugLog(barcode: barcode, status: status, data: data)
+            throw OpenFoodFactsError.network("status \(status)")
         }
 
         guard
@@ -34,12 +34,14 @@ enum OpenFoodFactsService {
             let status = json["status"] as? Int, status == 1,
             let product = json["product"] as? [String: Any]
         else {
+            debugLog(barcode: barcode, status: http.statusCode, data: data)
             throw OpenFoodFactsError.notFound
         }
 
-        guard let nutriments = product["nutriments"] as? [String: Any] else {
-            throw OpenFoodFactsError.badResponse
-        }
+        // Some OFF entries have a name/image but no contributed nutrition data.
+        // Fall back to zeros rather than failing outright — the result card
+        // lets the user fill in values manually instead of hitting a dead end.
+        let nutriments = product["nutriments"] as? [String: Any] ?? [:]
 
         func num(_ key: String) -> Double {
             if let d = nutriments[key] as? Double { return d }
@@ -61,5 +63,12 @@ enum OpenFoodFactsService {
             sugar: num("sugars_100g"),
             sodium: sodiumG * 1000
         )
+    }
+
+    private static func debugLog(barcode: String, status: Int, data: Data) {
+        #if DEBUG
+        let body = String(data: data.prefix(500), encoding: .utf8) ?? "<non-UTF8 body>"
+        print("[OpenFoodFacts] lookup failed — barcode=\(barcode) httpStatus=\(status) body=\(body)")
+        #endif
     }
 }

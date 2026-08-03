@@ -108,8 +108,7 @@ struct MealCameraCaptureControl: View {
             .buttonStyle(.plain)
             .padding(.bottom, 14)
         }
-        .frame(height: 220)
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

@@ -84,6 +84,13 @@ struct LogFoodSheet: View {
 
                 if pendingResult == nil && mode == .browse {
                     FoodBrowseView(mealType: mealType, onAdded: onAdded)
+                } else if wantsFullHeightLiveView {
+                    // Live camera/scanner previews want to fill the sheet's
+                    // remaining height for easier framing — a ScrollView
+                    // sizes to its content, not available space, so these
+                    // states bypass it in favor of a flexible frame.
+                    fullHeightLiveView
+                        .frame(maxHeight: .infinity)
                 } else {
                     ScrollView {
                         Group {
@@ -112,6 +119,27 @@ struct LogFoodSheet: View {
                         .foregroundStyle(.red.opacity(0.85))
                 }
             }
+        }
+    }
+
+    /// True when the sheet should show a live camera/scanner view that wants
+    /// to expand to fill the sheet's height, rather than the ScrollView-
+    /// wrapped, fixed-height content used everywhere else.
+    private var wantsFullHeightLiveView: Bool {
+        guard pendingResult == nil, !isLoading else { return false }
+        switch mode {
+        case .scan: return capturedImage == nil && MealCameraController.isAvailable
+        case .barcode: return BarcodeScannerView.isAvailable
+        default: return false
+        }
+    }
+
+    @ViewBuilder
+    private var fullHeightLiveView: some View {
+        switch mode {
+        case .scan: scanBody
+        case .barcode: barcodeBody
+        default: EmptyView()
         }
     }
 
@@ -182,7 +210,9 @@ struct LogFoodSheet: View {
                         }
                         Task { await runScan(image: image) }
                     }
+                    .frame(maxHeight: .infinity)
                 }
+                .frame(maxHeight: .infinity)
             } else {
                 RoundedRectangle(cornerRadius: 20)
                     .strokeBorder(Theme.hairline, style: StrokeStyle(lineWidth: 1.5, dash: [6, 5]))
@@ -256,8 +286,7 @@ struct LogFoodSheet: View {
                             .padding(.bottom, 14)
                     }
                 }
-                .frame(height: 220)
-                .frame(maxWidth: .infinity)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 RoundedRectangle(cornerRadius: 20)
                     .strokeBorder(Theme.hairline, style: StrokeStyle(lineWidth: 1.5, dash: [6, 5]))

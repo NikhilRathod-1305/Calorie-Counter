@@ -19,6 +19,7 @@ App appearance follows the system by default and can be pinned to Light or Dark 
 | BMI gauge | Water history | Settings |
 |---|---|---|
 | ![BMI gauge](docs/screenshots/bmi_gauge.png) | ![Water intake history](docs/screenshots/water_history.png) | ![Settings / More tab](docs/screenshots/settings.png) |
+| ![BMI gauge, light](docs/screenshots/bmi_gauge_light.png) | ![Water tracker, light](docs/screenshots/water_history_light.png) | ![Settings / More tab, light](docs/screenshots/settings_light.png) |
 
 ## How logging a meal works
 

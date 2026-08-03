@@ -11,7 +11,7 @@ struct CalorieTrackerApp: App {
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")
         }
-
+ 
         let context = modelContainer.mainContext
         FoodLibrarySeeder.seedIfNeeded(context: context)
 

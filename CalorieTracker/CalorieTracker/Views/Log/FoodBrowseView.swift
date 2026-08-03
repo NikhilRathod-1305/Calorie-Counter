@@ -3,7 +3,6 @@ import SwiftData
 
 enum FoodListTab: String, CaseIterable {
     case recent = "Recent"
-    case indian = "Indian"
     case favorites = "Favorites"
     case personal = "My Foods"
 }
@@ -50,24 +49,44 @@ struct FoodBrowseView: View {
     }
 
     private var favoriteFoods: [FoodItem] { allFoods.filter(\.isFavorite) }
-    private var personalFoods: [FoodItem] { allFoods.filter(\.isCustom) }
-    private var indianFoods: [FoodItem] { allFoods.filter { FoodLibrarySeeder.indianDishNames.contains($0.name) } }
 
     private var listedFoods: [FoodItem] {
         let base: [FoodItem]
         switch tab {
         case .recent: base = recentFoods
-        case .indian: base = indianFoods
         case .favorites: base = favoriteFoods
-        case .personal: base = personalFoods
+        case .personal: base = allFoods
         }
         guard !query.isEmpty else { return base }
-        return base.filter { $0.name.localizedCaseInsensitiveContains(query) }
+        return Self.rankedMatches(of: query, in: base)
     }
 
+    /// Search is global across the whole library regardless of which tab is
+    /// active, so a query always surfaces every matching food, not just the
+    /// ones in the current tab's subset.
     private var searchResults: [FoodItem]? {
-        guard !query.isEmpty, tab == .recent else { return nil }
-        return allFoods.filter { $0.name.localizedCaseInsensitiveContains(query) }
+        guard !query.isEmpty else { return nil }
+        return Self.rankedMatches(of: query, in: allFoods)
+    }
+
+    /// Ranks foods by match quality rather than relying on `@Query`'s name
+    /// sort order: exact name match, then name-prefix, then a word inside the
+    /// name starting with the query, then any substring hit in name/brand.
+    /// Keeps ties in alphabetical order since `foods` is already name-sorted.
+    private static func rankedMatches(of query: String, in foods: [FoodItem]) -> [FoodItem] {
+        func score(_ food: FoodItem) -> Int? {
+            let name = food.name
+            if name.caseInsensitiveCompare(query) == .orderedSame { return 0 }
+            if name.range(of: query, options: [.caseInsensitive, .anchored]) != nil { return 1 }
+            if name.range(of: " \(query)", options: [.caseInsensitive]) != nil { return 2 }
+            if name.localizedCaseInsensitiveContains(query) { return 3 }
+            if let brand = food.brand, brand.localizedCaseInsensitiveContains(query) { return 4 }
+            return nil
+        }
+        return foods
+            .compactMap { food in score(food).map { (food, $0) } }
+            .sorted { $0.1 < $1.1 }
+            .map(\.0)
     }
 
     private var selectedTotal: Int {
@@ -217,9 +236,8 @@ struct FoodBrowseView: View {
     private var emptyMessage: String {
         switch tab {
         case .recent: return "No recent foods yet"
-        case .indian: return "No Indian dishes found"
         case .favorites: return "No favorites yet — tap the heart on a food to save it here"
-        case .personal: return "No foods added yet — create one above"
+        case .personal: return "No foods found"
         }
     }
 
@@ -251,9 +269,19 @@ struct FoodBrowseView: View {
             .buttonStyle(.plain)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(food.name)
-                    .font(Theme.Font.text(15, weight: .semibold))
-                    .foregroundStyle(Theme.textPrimary)
+                HStack(spacing: 5) {
+                    Text(food.name)
+                        .font(Theme.Font.text(15, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                    if let brand = food.brand {
+                        Text(brand)
+                            .font(Theme.Font.text(11, weight: .medium))
+                            .foregroundStyle(Theme.textFaint)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .glassCardAlt(RoundedRectangle(cornerRadius: 6))
+                    }
+                }
                 Text("\(Int(food.calories)) kcal , \(Int(food.servingSize)) \(food.servingUnit)")
                     .font(Theme.Font.text(12))
                     .foregroundStyle(Theme.textFaint)
@@ -261,7 +289,7 @@ struct FoodBrowseView: View {
 
             Spacer()
 
-            if tab == .personal {
+            if food.isCustom {
                 Menu {
                     Button("Edit") { editingFood = food }
                     Button("Delete", role: .destructive) { deletingFood = food }

@@ -26,6 +26,8 @@
 	<string>Used to show your daily step count on the dashboard.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Used to record your voice so you can log meals by speaking.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Used to save meal photos you take to your Photos library when you choose to keep them.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Used to pick meal photos from your library to log calories.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>

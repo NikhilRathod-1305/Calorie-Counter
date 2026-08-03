@@ -27,7 +27,8 @@ struct CupIconView: View {
                     .fill(LinearGradient(colors: [waveTop, waveBottom], startPoint: .top, endPoint: .bottom))
 
                 if showBubbles && fraction > 0.08 {
-                    BubblesView(seed: kind.hashValue, color: bubble)
+                    BubblesShape(seed: kind.hashValue)
+                        .fill(bubble)
                         .frame(maxHeight: .infinity, alignment: .bottom)
                         .mask(WaterWaveShape(fraction: fraction, waveHeight: 2, wavelengthScale: 1.0, phase: -.pi / 2))
                 }
@@ -221,9 +222,14 @@ private struct MugHandleShape: Shape {
 /// A few small static circles suggesting bubbles in the liquid; positions are
 /// derived deterministically from `seed` so the same vessel kind always shows
 /// the same arrangement (no per-frame randomness/animation).
-private struct BubblesView: View {
+///
+/// Drawn as a single `Shape` rather than a `GeometryReader` + `ForEach` of
+/// `Circle` views — `Shape.path(in:)` is handed its final rect directly by
+/// layout, so this avoids an extra per-instance layout pass. That matters
+/// here because `CupIconView` is instantiated per row in scrolling history
+/// lists, where a `GeometryReader` per row was a measurable jank contributor.
+private struct BubblesShape: Shape {
     let seed: Int
-    let color: Color
 
     private struct Bubble { let x: CGFloat; let y: CGFloat; let size: CGFloat }
 
@@ -238,15 +244,14 @@ private struct BubblesView: View {
         }
     }
 
-    var body: some View {
-        GeometryReader { geo in
-            ForEach(Array(bubbles.enumerated()), id: \.offset) { _, bubble in
-                Circle()
-                    .fill(color)
-                    .frame(width: geo.size.width * bubble.size, height: geo.size.width * bubble.size)
-                    .position(x: geo.size.width * bubble.x, y: geo.size.height * bubble.y)
-            }
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        for bubble in bubbles {
+            let diameter = rect.width * bubble.size
+            let center = CGPoint(x: rect.width * bubble.x, y: rect.height * bubble.y)
+            path.addEllipse(in: CGRect(x: center.x - diameter / 2, y: center.y - diameter / 2, width: diameter, height: diameter))
         }
+        return path
     }
 }
 

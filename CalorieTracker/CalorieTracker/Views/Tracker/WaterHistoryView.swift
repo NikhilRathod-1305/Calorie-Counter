@@ -43,7 +43,7 @@ struct WaterHistoryView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            LazyVStack(spacing: 16) {
                 if cachedGroups.isEmpty {
                     Text("No water logged yet")
                         .font(Theme.Font.text(13))

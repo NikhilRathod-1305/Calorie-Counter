@@ -24,10 +24,10 @@ struct LogFoodSheet: View {
     // Scan
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var capturedImage: UIImage?
-    @State private var showingCamera = false
+    @State private var saveCapturedPhoto = false
 
     // Barcode
-    @State private var showingBarcodeScanner = false
+    @State private var barcodeScanID = UUID()
 
     // Voice
     @StateObject private var speech = SpeechTranscriber()
@@ -113,43 +113,13 @@ struct LogFoodSheet: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $showingCamera) {
-            CameraCaptureView(
-                onCapture: { image in
-                    showingCamera = false
-                    capturedImage = image
-                    Task { await runScan(image: image) }
-                },
-                onCancel: { showingCamera = false }
-            )
-            .ignoresSafeArea()
-        }
-        .fullScreenCover(isPresented: $showingBarcodeScanner) {
-            ZStack(alignment: .topTrailing) {
-                BarcodeScannerView { code in
-                    showingBarcodeScanner = false
-                    Task { await runBarcodeLookup(code) }
-                }
-                .ignoresSafeArea()
-
-                Button {
-                    showingBarcodeScanner = false
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(.white)
-                        .frame(width: 36, height: 36)
-                        .background(.black.opacity(0.4), in: Circle())
-                }
-                .padding(20)
-            }
-        }
     }
 
     private func resetTransient() {
         pendingResult = nil
         errorMessage = nil
         capturedImage = nil
+        saveCapturedPhoto = false
         speech.stop()
         speech.transcript = ""
         textDraft = ""
@@ -162,12 +132,57 @@ struct LogFoodSheet: View {
     private var scanBody: some View {
         VStack(spacing: 18) {
             if let capturedImage {
-                Image(uiImage: capturedImage)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(height: 180)
-                    .frame(maxWidth: .infinity)
-                    .clipShape(RoundedRectangle(cornerRadius: 20))
+                ZStack {
+                    Image(uiImage: capturedImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(height: 220)
+                        .frame(maxWidth: .infinity)
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+
+                    if isLoading {
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(.black.opacity(0.45))
+                        VStack(spacing: 10) {
+                            ProgressView().tint(.white)
+                            Text("Analyzing meal…")
+                                .font(Theme.Font.text(12, weight: .medium))
+                                .foregroundStyle(.white)
+                        }
+                    }
+                }
+                .frame(height: 220)
+                .frame(maxWidth: .infinity)
+            } else if isLoading {
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Theme.cardBackgroundAlt)
+                    .frame(height: 220)
+                    .overlay(ProgressView().tint(Theme.accent))
+            } else if MealCameraController.isAvailable {
+                VStack(spacing: 12) {
+                    Button {
+                        saveCapturedPhoto.toggle()
+                    } label: {
+                        HStack(spacing: 10) {
+                            Image(systemName: saveCapturedPhoto ? "checkmark.square.fill" : "square")
+                                .font(.system(size: 17))
+                                .foregroundStyle(saveCapturedPhoto ? Theme.accent : Theme.textFaint)
+                            Text("Save photo to Photos")
+                                .font(Theme.Font.text(12, weight: .medium))
+                                .foregroundStyle(Theme.textSecondary)
+                            Spacer()
+                        }
+                    }
+                    .buttonStyle(.plain)
+
+                    MealCameraCaptureControl { image in
+                        capturedImage = image
+                        if saveCapturedPhoto {
+                            PhotoLibrarySaver.save(image)
+                        }
+                        Task { await runScan(image: image) }
+                    }
+                }
             } else {
                 RoundedRectangle(cornerRadius: 20)
                     .strokeBorder(Theme.hairline, style: StrokeStyle(lineWidth: 1.5, dash: [6, 5]))
@@ -177,46 +192,23 @@ struct LogFoodSheet: View {
                             Image(systemName: "camera")
                                 .font(.system(size: 26))
                                 .foregroundStyle(Theme.textFaint)
-                            Text("Point at your plate")
+                            Text("Camera unavailable on this device.")
                                 .font(Theme.Font.text(12))
                                 .foregroundStyle(Theme.textFaint)
                         }
                     )
             }
 
-            if isLoading {
-                ProgressView().tint(Theme.accent)
-            } else {
-                VStack(spacing: 10) {
-                    Button {
-                        showingCamera = true
-                    } label: {
-                        Text("Take Photo")
-                            .font(Theme.Font.text(14, weight: .semibold))
-                            .foregroundStyle(Theme.onAccent)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 13)
-                            .background(Theme.accent, in: RoundedRectangle(cornerRadius: 14))
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(!CameraCaptureView.isAvailable)
-
-                    PhotosPicker(selection: $photoPickerItem, matching: .images) {
-                        Text("Choose from Library")
-                            .font(Theme.Font.text(14, weight: .semibold))
-                            .foregroundStyle(Theme.textPrimary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 13)
-                            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.hairline, lineWidth: 1))
-                    }
-                    .buttonStyle(.plain)
-
-                    if !CameraCaptureView.isAvailable {
-                        Text("Camera unavailable on this device.")
-                            .font(Theme.Font.text(11))
-                            .foregroundStyle(Theme.textFaint)
-                    }
+            if !isLoading {
+                PhotosPicker(selection: $photoPickerItem, matching: .images) {
+                    Text("Choose from Library")
+                        .font(Theme.Font.text(14, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 13)
+                        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Theme.hairline, lineWidth: 1))
                 }
+                .buttonStyle(.plain)
             }
         }
         .onChange(of: photoPickerItem) { _, newItem in
@@ -233,41 +225,53 @@ struct LogFoodSheet: View {
 
     private var barcodeBody: some View {
         VStack(spacing: 18) {
-            RoundedRectangle(cornerRadius: 20)
-                .strokeBorder(Theme.hairline, style: StrokeStyle(lineWidth: 1.5, dash: [6, 5]))
-                .frame(height: 180)
-                .overlay(
-                    VStack(spacing: 10) {
-                        Image(systemName: "barcode.viewfinder")
-                            .font(.system(size: 26))
-                            .foregroundStyle(Theme.textFaint)
-                        Text("Scan a product barcode")
-                            .font(Theme.Font.text(12))
-                            .foregroundStyle(Theme.textFaint)
-                    }
-                )
-
             if isLoading {
-                ProgressView().tint(Theme.accent)
-            } else {
-                Button {
-                    showingBarcodeScanner = true
-                } label: {
-                    Text("Scan Barcode")
-                        .font(Theme.Font.text(14, weight: .semibold))
-                        .foregroundStyle(Theme.onAccent)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 13)
-                        .background(Theme.accent, in: RoundedRectangle(cornerRadius: 14))
-                }
-                .buttonStyle(.plain)
-                .disabled(!BarcodeScannerView.isAvailable)
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Theme.cardBackgroundAlt)
+                    .frame(height: 220)
+                    .overlay(
+                        VStack(spacing: 10) {
+                            ProgressView().tint(Theme.accent)
+                            Text("Looking up product…")
+                                .font(Theme.Font.text(12, weight: .medium))
+                                .foregroundStyle(Theme.textFaint)
+                        }
+                    )
+            } else if BarcodeScannerView.isAvailable {
+                ZStack {
+                    BarcodeScannerView { code in
+                        Task { await runBarcodeLookup(code) }
+                    }
+                    .id(barcodeScanID)
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
 
-                if !BarcodeScannerView.isAvailable {
-                    Text("Camera unavailable on this device.")
-                        .font(Theme.Font.text(11))
-                        .foregroundStyle(Theme.textFaint)
+                    VStack {
+                        Spacer()
+                        Text("Align the barcode within the frame")
+                            .font(Theme.Font.text(12, weight: .medium))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(.black.opacity(0.4), in: Capsule())
+                            .padding(.bottom, 14)
+                    }
                 }
+                .frame(height: 220)
+                .frame(maxWidth: .infinity)
+            } else {
+                RoundedRectangle(cornerRadius: 20)
+                    .strokeBorder(Theme.hairline, style: StrokeStyle(lineWidth: 1.5, dash: [6, 5]))
+                    .frame(height: 180)
+                    .overlay(
+                        VStack(spacing: 10) {
+                            Image(systemName: "barcode.viewfinder")
+                                .font(.system(size: 26))
+                                .foregroundStyle(Theme.textFaint)
+                            Text("Camera unavailable on this device.")
+                                .font(Theme.Font.text(12))
+                                .foregroundStyle(Theme.textFaint)
+                        }
+                    )
             }
         }
     }
@@ -280,6 +284,9 @@ struct LogFoodSheet: View {
             pendingResult = result
         } catch {
             errorMessage = error.localizedDescription
+            // Recreate the scanner so its session (stopped after the first
+            // detection) restarts and the user can retry immediately.
+            barcodeScanID = UUID()
         }
         isLoading = false
     }

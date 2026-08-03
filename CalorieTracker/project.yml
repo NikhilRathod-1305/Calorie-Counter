@@ -28,6 +28,7 @@ targets:
         NSMicrophoneUsageDescription: "Used to record your voice so you can log meals by speaking."
         NSSpeechRecognitionUsageDescription: "Used to transcribe your voice into text when logging a meal."
         NSPhotoLibraryUsageDescription: "Used to pick meal photos from your library to log calories."
+        NSPhotoLibraryAddUsageDescription: "Used to save meal photos you take to your Photos library when you choose to keep them."
         NSHealthShareUsageDescription: "Used to show your daily step count on the dashboard."
     settings:
       base:

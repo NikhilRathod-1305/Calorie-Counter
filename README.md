@@ -11,10 +11,9 @@ App appearance follows the system by default and can be pinned to Light or Dark 
 | ![Home dashboard, dark](docs/screenshots/home.png) | ![Tracker tab, dark](docs/screenshots/tracker.png) | ![Insights charts, dark](docs/screenshots/insights.png) |
 | ![Home dashboard, light](docs/screenshots/home_light.png) | ![Tracker tab, light](docs/screenshots/tracker_light.png) | ![Insights charts, light](docs/screenshots/insights_light.png) |
 
-| Quick Log | Browse foods | Profile |
-|---|---|---|
-| ![Quick Log entry types](docs/screenshots/quick_log.png) | ![Browse/search foods](docs/screenshots/log_food_browse.png) | ![Profile & goals](docs/screenshots/profile.png) |
-| | ![Browse/search foods, light](docs/screenshots/log_food_browse_light.png) | |
+| Quick Log | Browse foods (dark) | Browse foods (light) | Profile |
+|---|---|---|---|
+| ![Quick Log entry types](docs/screenshots/quick_log.png) | ![Browse/search foods, dark](docs/screenshots/log_food_browse.png) | ![Browse/search foods, light](docs/screenshots/log_food_browse_light.png) | ![Profile & goals](docs/screenshots/profile.png) |
 
 | BMI gauge | Water history | Settings |
 |---|---|---|

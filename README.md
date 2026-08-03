@@ -16,9 +16,9 @@ App appearance follows the system by default and can be pinned to Light or Dark 
 | ![Quick Log entry types](docs/screenshots/quick_log.png) | ![Browse/search foods](docs/screenshots/log_food_browse.png) | ![Profile & goals](docs/screenshots/profile.png) |
 | ![Quick Log entry types, light](docs/screenshots/quick_log_light.png) | ![Browse/search foods, light](docs/screenshots/log_food_browse_light.png) | ![Profile & goals, light](docs/screenshots/profile_light.png) |
 
-| BMI gauge | Water history | Settings |
+| BMI gauge | Water tracker | Settings |
 |---|---|---|
-| ![BMI gauge](docs/screenshots/bmi_gauge.png) | ![Water intake history](docs/screenshots/water_history.png) | ![Settings / More tab](docs/screenshots/settings.png) |
+| ![BMI gauge](docs/screenshots/bmi_gauge.png) | ![Water tracker, dark](docs/screenshots/water_history.png) | ![Settings / More tab](docs/screenshots/settings.png) |
 | ![BMI gauge, light](docs/screenshots/bmi_gauge_light.png) | ![Water tracker, light](docs/screenshots/water_history_light.png) | ![Settings / More tab, light](docs/screenshots/settings_light.png) |
 
 ## How logging a meal works

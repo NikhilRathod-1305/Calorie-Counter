@@ -7,7 +7,7 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    DEVELOPMENT_TEAM: "D74G6BG2UJ"
+    DEVELOPMENT_TEAM: "YJJYU974Z9"
     CODE_SIGN_STYLE: Automatic
     ENABLE_PREVIEWS: YES
 targets:

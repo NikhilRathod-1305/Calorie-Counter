@@ -88,7 +88,11 @@ struct BottomSheetContainer<Content: View>: View {
         .clipShape(
             UnevenRoundedRectangle(topLeadingRadius: Theme.Radius.sheet, topTrailingRadius: Theme.Radius.sheet)
         )
-        .ignoresSafeArea(edges: .bottom)
+        // Only the physical bottom edge (home indicator) should be ignored,
+        // so the background/shape still reaches it — the keyboard's inset
+        // must stay respected, or content behind a focused text field gets
+        // covered with no way to scroll it into view.
+        .ignoresSafeArea(.container, edges: .bottom)
         .shadow(color: Color.black.opacity(translucent ? 0 : 0.06), radius: 10, x: 0, y: 4)
     }
 }

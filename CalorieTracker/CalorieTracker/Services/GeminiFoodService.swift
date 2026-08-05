@@ -40,33 +40,43 @@ enum GeminiFoodService {
 
     private static let logFoodFunction: [String: Any] = [
         "name": functionName,
-        "description": "Report the identified food item and its nutritional values for a single standard serving as described.",
+        "description": "Report every distinct food or drink item identified, each with its own nutritional values for the portion described or shown.",
         "parameters": [
             "type": "object",
             "properties": [
-                "name": ["type": "string", "description": "Short, natural name of the food or meal."],
-                "calories": ["type": "number"],
-                "protein_g": ["type": "number"],
-                "carbs_g": ["type": "number"],
-                "fat_g": ["type": "number"],
-                "fiber_g": ["type": "number"],
-                "sugar_g": ["type": "number"],
-                "sodium_mg": ["type": "number"]
+                "items": [
+                    "type": "array",
+                    "description": "One entry per distinct food/drink item. If only one food is present, return a single-element array.",
+                    "items": [
+                        "type": "object",
+                        "properties": [
+                            "name": ["type": "string", "description": "Short, natural name of the food item."],
+                            "calories": ["type": "number"],
+                            "protein_g": ["type": "number"],
+                            "carbs_g": ["type": "number"],
+                            "fat_g": ["type": "number"],
+                            "fiber_g": ["type": "number"],
+                            "sugar_g": ["type": "number"],
+                            "sodium_mg": ["type": "number"]
+                        ],
+                        "required": ["name", "calories", "protein_g", "carbs_g", "fat_g", "fiber_g", "sugar_g", "sodium_mg"]
+                    ]
+                ]
             ],
-            "required": ["name", "calories", "protein_g", "carbs_g", "fat_g", "fiber_g", "sugar_g", "sodium_mg"]
+            "required": ["items"]
         ]
     ]
 
-    static func parseText(_ description: String) async throws -> ParsedFoodResult {
+    static func parseText(_ description: String) async throws -> [ParsedFoodResult] {
         guard let apiKey = KeychainStore.loadAPIKey(), !apiKey.isEmpty else {
             throw GeminiFoodServiceError.missingAPIKey
         }
-        let prompt = "Estimate the nutrition for this food/meal description, using reasonable standard portions when not specified: \"\(description)\""
+        let prompt = "Estimate the nutrition for this food/meal description, using reasonable standard portions when not specified. If it describes more than one distinct food or drink, list each as a separate item rather than combining them: \"\(description)\""
         let parts: [[String: Any]] = [["text": prompt]]
         return try await send(apiKey: apiKey, parts: parts)
     }
 
-    static func parseImage(_ image: UIImage) async throws -> ParsedFoodResult {
+    static func parseImage(_ image: UIImage, refinementText: String? = nil) async throws -> [ParsedFoodResult] {
         guard let apiKey = KeychainStore.loadAPIKey(), !apiKey.isEmpty else {
             throw GeminiFoodServiceError.missingAPIKey
         }
@@ -75,6 +85,10 @@ enum GeminiFoodService {
             throw GeminiFoodServiceError.invalidImage
         }
         let base64 = jpegData.base64EncodedString()
+        var prompt = "Identify each distinct food or drink in this photo and estimate its nutrition based on the portion shown. If there are multiple separate items on the plate (e.g. eggs, toast, juice), list each as its own item rather than combining them into one total."
+        if let refinementText, !refinementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            prompt += " Correction from the user, which takes priority over what the photo appears to show: \"\(refinementText)\""
+        }
         let parts: [[String: Any]] = [
             [
                 "inline_data": [
@@ -82,12 +96,12 @@ enum GeminiFoodService {
                     "data": base64
                 ]
             ],
-            ["text": "Identify the food or meal in this photo and estimate its total nutrition based on typical portion size shown."]
+            ["text": prompt]
         ]
         return try await send(apiKey: apiKey, parts: parts)
     }
 
-    private static func send(apiKey: String, parts: [[String: Any]]) async throws -> ParsedFoodResult {
+    private static func send(apiKey: String, parts: [[String: Any]]) async throws -> [ParsedFoodResult] {
         var lastError: Error = GeminiFoodServiceError.badResponse
         for model in modelFallbacks {
             do {
@@ -103,7 +117,7 @@ enum GeminiFoodService {
         throw lastError
     }
 
-    private static func send(apiKey: String, parts: [[String: Any]], model: String) async throws -> ParsedFoodResult {
+    private static func send(apiKey: String, parts: [[String: Any]], model: String) async throws -> [ParsedFoodResult] {
         var request = URLRequest(url: endpoint(model: model))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -114,7 +128,7 @@ enum GeminiFoodService {
                 ["role": "user", "parts": parts]
             ],
             "systemInstruction": [
-                "parts": [["text": "You are a nutrition estimation assistant. Always call the log_food function exactly once with your best estimate. Never ask clarifying questions."]]
+                "parts": [["text": "You are a nutrition estimation assistant. Always call the log_food function exactly once with your best estimate, listing each distinct food or drink as a separate item in the items array rather than merging them into one combined item. Never ask clarifying questions."]]
             ],
             "tools": [
                 ["functionDeclarations": [logFoodFunction]]
@@ -153,23 +167,25 @@ enum GeminiFoodService {
 
         for part in responseParts {
             guard let functionCall = part["functionCall"] as? [String: Any],
-                  let args = functionCall["args"] as? [String: Any] else { continue }
+                  let args = functionCall["args"] as? [String: Any],
+                  let items = args["items"] as? [[String: Any]], !items.isEmpty else { continue }
 
-            func num(_ key: String) -> Double {
-                (args[key] as? Double) ?? Double(args[key] as? Int ?? 0)
+            func num(_ item: [String: Any], _ key: String) -> Double {
+                (item[key] as? Double) ?? Double(item[key] as? Int ?? 0)
             }
 
-            let name = (args["name"] as? String) ?? "Meal"
-            return ParsedFoodResult(
-                name: name,
-                calories: num("calories"),
-                protein: num("protein_g"),
-                carbs: num("carbs_g"),
-                fat: num("fat_g"),
-                fiber: num("fiber_g"),
-                sugar: num("sugar_g"),
-                sodium: num("sodium_mg")
-            )
+            return items.map { item in
+                ParsedFoodResult(
+                    name: (item["name"] as? String) ?? "Meal",
+                    calories: num(item, "calories"),
+                    protein: num(item, "protein_g"),
+                    carbs: num(item, "carbs_g"),
+                    fat: num(item, "fat_g"),
+                    fiber: num(item, "fiber_g"),
+                    sugar: num(item, "sugar_g"),
+                    sodium: num(item, "sodium_mg")
+                )
+            }
         }
 
         throw GeminiFoodServiceError.noFunctionCall

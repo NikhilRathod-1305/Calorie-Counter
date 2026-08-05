@@ -81,6 +81,7 @@ struct QuickLogSheet: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 20)
+            .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.medium))
             .glassEffect(.regular, in: RoundedRectangle(cornerRadius: Theme.Radius.medium))
         }
         .buttonStyle(.plain)
@@ -99,6 +100,7 @@ struct QuickLogSheet: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 20)
+            .contentShape(RoundedRectangle(cornerRadius: Theme.Radius.medium))
             .glassEffect(.regular, in: RoundedRectangle(cornerRadius: Theme.Radius.medium))
         }
         .buttonStyle(.plain)

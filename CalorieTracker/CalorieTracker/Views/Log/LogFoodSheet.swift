@@ -10,6 +10,14 @@ enum LogMode: String, CaseIterable {
     case browse = "Browse"
 }
 
+/// One detected food item awaiting review, with its own editable portion —
+/// several of these can come from a single scan/text/voice entry.
+struct PendingFoodResult: Identifiable {
+    let id = UUID()
+    var result: ParsedFoodResult
+    var quantity: Double = 1
+}
+
 struct LogFoodSheet: View {
     @Environment(\.modelContext) private var modelContext
     let initialMode: LogMode
@@ -19,12 +27,13 @@ struct LogFoodSheet: View {
 
     @State private var mode: LogMode
     @State private var mealType: MealType
-    @State private var quantity: Double = 1
 
     // Scan
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var capturedImage: UIImage?
     @State private var saveCapturedPhoto = false
+    @State private var scanRefinementText: String = ""
+    @FocusState private var isRefinementFieldFocused: Bool
 
     // Barcode
     @State private var barcodeScanID = UUID()
@@ -35,8 +44,8 @@ struct LogFoodSheet: View {
     // Text
     @State private var textDraft: String = ""
 
-    // Shared result
-    @State private var pendingResult: ParsedFoodResult?
+    // Shared result — one card per detected item, each with its own portion.
+    @State private var pendingResults: [PendingFoodResult] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var saveToMyFoods: Bool
@@ -52,16 +61,19 @@ struct LogFoodSheet: View {
         // explicit opt-in rather than a side effect of just editing a quantity/value.
         _saveToMyFoods = State(initialValue: editingEntry == nil)
         if let editingEntry {
-            _pendingResult = State(initialValue: ParsedFoodResult(
-                name: editingEntry.displayName,
-                calories: editingEntry.nutrition.calories,
-                protein: editingEntry.nutrition.protein,
-                carbs: editingEntry.nutrition.carbs,
-                fat: editingEntry.nutrition.fat,
-                fiber: editingEntry.nutrition.fiber,
-                sugar: editingEntry.nutrition.sugar,
-                sodium: editingEntry.nutrition.sodium
-            ))
+            _pendingResults = State(initialValue: [PendingFoodResult(
+                result: ParsedFoodResult(
+                    name: editingEntry.displayName,
+                    calories: editingEntry.nutrition.calories,
+                    protein: editingEntry.nutrition.protein,
+                    carbs: editingEntry.nutrition.carbs,
+                    fat: editingEntry.nutrition.fat,
+                    fiber: editingEntry.nutrition.fiber,
+                    sugar: editingEntry.nutrition.sugar,
+                    sodium: editingEntry.nutrition.sodium
+                ),
+                quantity: editingEntry.quantity
+            )])
         }
     }
 
@@ -82,7 +94,7 @@ struct LogFoodSheet: View {
                     .onChange(of: mode) { _, _ in resetTransient() }
                 }
 
-                if pendingResult == nil && mode == .browse {
+                if pendingResults.isEmpty && mode == .browse {
                     FoodBrowseView(mealType: mealType, onAdded: onAdded)
                 } else if wantsFullHeightLiveView {
                     // Live camera/scanner previews want to fill the sheet's
@@ -94,11 +106,8 @@ struct LogFoodSheet: View {
                 } else {
                     ScrollView {
                         Group {
-                            if let pendingResult {
-                                resultCard(Binding(
-                                    get: { pendingResult },
-                                    set: { self.pendingResult = $0 }
-                                ))
+                            if !pendingResults.isEmpty {
+                                resultsList
                             } else {
                                 switch mode {
                                 case .scan: scanBody
@@ -111,6 +120,7 @@ struct LogFoodSheet: View {
                         }
                     }
                     .scrollIndicators(.hidden)
+                    .scrollDismissesKeyboard(.interactively)
                 }
 
                 if let errorMessage {
@@ -126,7 +136,7 @@ struct LogFoodSheet: View {
     /// to expand to fill the sheet's height, rather than the ScrollView-
     /// wrapped, fixed-height content used everywhere else.
     private var wantsFullHeightLiveView: Bool {
-        guard pendingResult == nil, !isLoading else { return false }
+        guard pendingResults.isEmpty, !isLoading else { return false }
         switch mode {
         case .scan: return capturedImage == nil && MealCameraController.isAvailable
         case .barcode: return BarcodeScannerView.isAvailable
@@ -144,14 +154,14 @@ struct LogFoodSheet: View {
     }
 
     private func resetTransient() {
-        pendingResult = nil
+        pendingResults = []
         errorMessage = nil
         capturedImage = nil
         saveCapturedPhoto = false
+        scanRefinementText = ""
         speech.stop()
         speech.transcript = ""
         textDraft = ""
-        quantity = 1
         saveToMyFoods = true
     }
 
@@ -310,7 +320,7 @@ struct LogFoodSheet: View {
         errorMessage = nil
         do {
             let result = try await OpenFoodFactsService.lookup(barcode: code)
-            pendingResult = result
+            pendingResults = [PendingFoodResult(result: result)]
         } catch {
             errorMessage = error.localizedDescription
             // Recreate the scanner so its session (stopped after the first
@@ -320,16 +330,21 @@ struct LogFoodSheet: View {
         isLoading = false
     }
 
-    private func runScan(image: UIImage) async {
+    private func runScan(image: UIImage, refinementText: String? = nil) async {
         isLoading = true
         errorMessage = nil
         do {
-            let result = try await GeminiFoodService.parseImage(image)
-            pendingResult = result
+            let results = try await GeminiFoodService.parseImage(image, refinementText: refinementText)
+            pendingResults = results.map { PendingFoodResult(result: $0) }
         } catch {
             errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
+
+    private func rescanWithRefinement() async {
+        guard let capturedImage else { return }
+        await runScan(image: capturedImage, refinementText: scanRefinementText)
     }
 
     // MARK: Voice
@@ -435,17 +450,30 @@ struct LogFoodSheet: View {
         errorMessage = nil
         if isVoice { lastVoiceTranscript = trimmed }
         do {
-            let result = try await GeminiFoodService.parseText(trimmed)
-            pendingResult = result
+            let results = try await GeminiFoodService.parseText(trimmed)
+            pendingResults = results.map { PendingFoodResult(result: $0) }
         } catch {
             errorMessage = error.localizedDescription
         }
         isLoading = false
     }
 
-    // MARK: Pending result (Scan/Barcode/Voice/Text) — editable before adding
+    // MARK: Pending results (Scan/Barcode/Voice/Text) — editable before adding
 
-    private func resultCard(_ result: Binding<ParsedFoodResult>) -> some View {
+    /// Binding into `pendingResults` for a given item id, so each stacked
+    /// card can edit its own entry independently of the others.
+    private func binding(for id: PendingFoodResult.ID) -> Binding<PendingFoodResult> {
+        Binding(
+            get: { pendingResults.first(where: { $0.id == id }) ?? PendingFoodResult(result: ParsedFoodResult(name: "", calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0, sodium: 0)) },
+            set: { updated in
+                if let index = pendingResults.firstIndex(where: { $0.id == id }) {
+                    pendingResults[index] = updated
+                }
+            }
+        )
+    }
+
+    private var resultsList: some View {
         VStack(spacing: 16) {
             if let lastVoiceTranscript, mode == .voice {
                 Text("Heard: \"\(lastVoiceTranscript)\"")
@@ -455,32 +483,22 @@ struct LogFoodSheet: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            VStack(alignment: .leading, spacing: 14) {
-                editableField(label: "Name", text: result.name)
-
-                HStack(spacing: 10) {
-                    editableNumberField(label: "Calories", value: result.calories, unit: "cal")
-                    editableNumberField(label: "Protein", value: result.protein, unit: "g")
-                }
-                HStack(spacing: 10) {
-                    editableNumberField(label: "Carbs", value: result.carbs, unit: "g")
-                    editableNumberField(label: "Fat", value: result.fat, unit: "g")
-                }
-                HStack(spacing: 10) {
-                    editableNumberField(label: "Fiber", value: result.fiber, unit: "g")
-                    editableNumberField(label: "Sugar", value: result.sugar, unit: "g")
-                }
-                editableNumberField(label: "Sodium", value: result.sodium, unit: "mg")
-
-                Text("Adjust any value above before adding — useful when you only ate part of what was scanned.")
+            if pendingResults.count > 1 {
+                Text("\(pendingResults.count) items detected — adjust portions below, or remove any you didn't eat.")
                     .font(Theme.Font.text(11))
                     .foregroundStyle(Theme.textFaint)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .glassCardAlt(RoundedRectangle(cornerRadius: 16))
 
-            if editingEntry?.foodItem == nil {
+            ForEach(pendingResults) { item in
+                resultCard(binding(for: item.id))
+            }
+
+            if mode == .scan && editingEntry == nil && capturedImage != nil {
+                scanRefinementField
+            }
+
+            if editingEntry?.foodItem == nil && editingEntry == nil {
                 Button {
                     saveToMyFoods.toggle()
                 } label: {
@@ -497,27 +515,25 @@ struct LogFoodSheet: View {
                 .buttonStyle(.plain)
             }
 
-            HStack {
-                QuantityStepper(quantity: $quantity, size: 32)
+            let totalCalories = pendingResults.reduce(0) { $0 + $1.result.calories * $1.quantity }
+            HStack(alignment: .lastTextBaseline, spacing: 2) {
                 Spacer()
-                HStack(alignment: .lastTextBaseline, spacing: 2) {
-                    Text("\(Int(result.wrappedValue.calories * quantity))")
-                        .font(Theme.Font.display(18))
-                        .foregroundStyle(Theme.textPrimary)
-                    Text(" cal total")
-                        .font(Theme.Font.text(11))
-                        .foregroundStyle(Theme.textTertiary)
-                }
+                Text("\(Int(totalCalories))")
+                    .font(Theme.Font.display(18))
+                    .foregroundStyle(Theme.textPrimary)
+                Text(" cal total")
+                    .font(Theme.Font.text(11))
+                    .foregroundStyle(Theme.textTertiary)
             }
 
             Button {
-                if let editingEntry {
-                    updateEntry(editingEntry, with: result.wrappedValue, quantity: quantity)
+                if let editingEntry, let first = pendingResults.first {
+                    updateEntry(editingEntry, with: first.result, quantity: first.quantity)
                 } else {
-                    addParsedResult(result.wrappedValue, quantity: quantity)
+                    addAllParsedResults(pendingResults)
                 }
             } label: {
-                Text(editingEntry != nil ? "Save changes" : "Add to log")
+                Text(editingEntry != nil ? "Save changes" : (pendingResults.count > 1 ? "Add all \(pendingResults.count) to log" : "Add to log"))
                     .font(Theme.Font.text(14, weight: .semibold))
                     .foregroundStyle(Theme.onAccent)
                     .frame(maxWidth: .infinity)
@@ -525,7 +541,109 @@ struct LogFoodSheet: View {
                     .background(Theme.accent, in: RoundedRectangle(cornerRadius: 14))
             }
             .buttonStyle(.plain)
+            .disabled(pendingResults.isEmpty)
         }
+    }
+
+    private var scanRefinementField: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Correct the scan")
+                .font(Theme.Font.text(10))
+                .foregroundStyle(Theme.textFaint)
+            TextEditor(text: $scanRefinementText)
+                .scrollContentBackground(.hidden)
+                .font(Theme.Font.text(13))
+                .foregroundStyle(Theme.textPrimary)
+                .frame(minHeight: 60)
+                .padding(10)
+                .glassCardAlt(RoundedRectangle(cornerRadius: 12))
+                .focused($isRefinementFieldFocused)
+                .toolbar {
+                    ToolbarItemGroup(placement: .keyboard) {
+                        Spacer()
+                        Button("Done") { isRefinementFieldFocused = false }
+                    }
+                }
+                .overlay(alignment: .topLeading) {
+                    if scanRefinementText.isEmpty {
+                        Text("e.g. \"only ate the egg whites\" or \"no butter on the toast\"")
+                            .font(Theme.Font.text(13))
+                            .foregroundStyle(Theme.textFaint)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 16)
+                            .allowsHitTesting(false)
+                    }
+                }
+
+            Button {
+                isRefinementFieldFocused = false
+                Task { await rescanWithRefinement() }
+            } label: {
+                ZStack {
+                    Text("Re-scan with correction")
+                        .opacity(isLoading ? 0 : 1)
+                    if isLoading { ProgressView().tint(Theme.textPrimary) }
+                }
+                .font(Theme.Font.text(13, weight: .semibold))
+                .foregroundStyle(Theme.textPrimary)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 11)
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.hairline, lineWidth: 1))
+            }
+            .buttonStyle(.plain)
+            .disabled(isLoading || scanRefinementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+        }
+    }
+
+    private func resultCard(_ item: Binding<PendingFoodResult>) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            editableField(label: "Name", text: item.result.name)
+
+            HStack(spacing: 10) {
+                editableNumberField(label: "Calories", value: item.result.calories, unit: "cal")
+                editableNumberField(label: "Protein", value: item.result.protein, unit: "g")
+            }
+            HStack(spacing: 10) {
+                editableNumberField(label: "Carbs", value: item.result.carbs, unit: "g")
+                editableNumberField(label: "Fat", value: item.result.fat, unit: "g")
+            }
+            HStack(spacing: 10) {
+                editableNumberField(label: "Fiber", value: item.result.fiber, unit: "g")
+                editableNumberField(label: "Sugar", value: item.result.sugar, unit: "g")
+            }
+            editableNumberField(label: "Sodium", value: item.result.sodium, unit: "mg")
+
+            Text("Adjust the portion below — useful when you only ate part of what was scanned.")
+                .font(Theme.Font.text(11))
+                .foregroundStyle(Theme.textFaint)
+
+            HStack {
+                QuantityStepper(quantity: item.quantity, size: 32)
+                Spacer()
+                HStack(alignment: .lastTextBaseline, spacing: 2) {
+                    Text("\(Int(item.wrappedValue.result.calories * item.wrappedValue.quantity))")
+                        .font(Theme.Font.text(15, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                    Text(" cal")
+                        .font(Theme.Font.text(11))
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                if pendingResults.count > 1 {
+                    Button {
+                        pendingResults.removeAll { $0.id == item.wrappedValue.id }
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 14))
+                            .foregroundStyle(Theme.textFaint)
+                            .padding(8)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .glassCardAlt(RoundedRectangle(cornerRadius: 16))
     }
 
     private func updateEntry(_ entry: MealEntry, with result: ParsedFoodResult, quantity: Double) {
@@ -594,7 +712,7 @@ struct LogFoodSheet: View {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 
-    private func addParsedResult(_ result: ParsedFoodResult, quantity: Double) {
+    private func addAllParsedResults(_ items: [PendingFoodResult]) {
         let inputMethod: InputMethod
         switch mode {
         case .scan: inputMethod = .photo
@@ -604,44 +722,49 @@ struct LogFoodSheet: View {
         case .browse: inputMethod = .search
         }
 
-        let savedFood: FoodItem?
-        if saveToMyFoods {
-            let food = FoodItem(
-                name: result.name,
-                calories: result.calories,
-                protein: result.protein,
-                carbs: result.carbs,
-                fat: result.fat,
-                fiber: result.fiber,
-                sugar: result.sugar,
-                sodium: result.sodium,
-                servingSize: 1,
-                servingUnit: "serving",
-                isCustom: true,
-                emoji: FoodCategory.other.emoji
-            )
-            modelContext.insert(food)
-            savedFood = food
-        } else {
-            savedFood = nil
-        }
+        for item in items {
+            let result = item.result
+            let quantity = item.quantity
 
-        let entry = MealEntry(
-            foodItem: savedFood,
-            customFoodName: savedFood == nil ? result.name : nil,
-            quantity: quantity,
-            mealType: mealType,
-            timestamp: Date(),
-            inputMethod: inputMethod,
-            calories: result.calories * quantity,
-            protein: result.protein * quantity,
-            carbs: result.carbs * quantity,
-            fat: result.fat * quantity,
-            fiber: result.fiber * quantity,
-            sugar: result.sugar * quantity,
-            sodium: result.sodium * quantity
-        )
-        modelContext.insert(entry)
+            let savedFood: FoodItem?
+            if saveToMyFoods {
+                let food = FoodItem(
+                    name: result.name,
+                    calories: result.calories,
+                    protein: result.protein,
+                    carbs: result.carbs,
+                    fat: result.fat,
+                    fiber: result.fiber,
+                    sugar: result.sugar,
+                    sodium: result.sodium,
+                    servingSize: 1,
+                    servingUnit: "serving",
+                    isCustom: true,
+                    emoji: FoodCategory.other.emoji
+                )
+                modelContext.insert(food)
+                savedFood = food
+            } else {
+                savedFood = nil
+            }
+
+            let entry = MealEntry(
+                foodItem: savedFood,
+                customFoodName: savedFood == nil ? result.name : nil,
+                quantity: quantity,
+                mealType: mealType,
+                timestamp: Date(),
+                inputMethod: inputMethod,
+                calories: result.calories * quantity,
+                protein: result.protein * quantity,
+                carbs: result.carbs * quantity,
+                fat: result.fat * quantity,
+                fiber: result.fiber * quantity,
+                sugar: result.sugar * quantity,
+                sodium: result.sodium * quantity
+            )
+            modelContext.insert(entry)
+        }
         try? modelContext.save()
         onAdded()
     }

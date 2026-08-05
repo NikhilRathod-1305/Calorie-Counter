@@ -67,11 +67,32 @@ enum GeminiFoodService {
         ]
     ]
 
-    static func parseText(_ description: String) async throws -> [ParsedFoodResult] {
+    static func parseText(_ description: String, refinementText: String? = nil) async throws -> [ParsedFoodResult] {
         guard let apiKey = KeychainStore.loadAPIKey(), !apiKey.isEmpty else {
             throw GeminiFoodServiceError.missingAPIKey
         }
-        let prompt = "Estimate the nutrition for this food/meal description, using reasonable standard portions when not specified. If it describes more than one distinct food or drink, list each as a separate item rather than combining them: \"\(description)\""
+        var prompt = "Estimate the nutrition for this food/meal description, using reasonable standard portions when not specified. If it describes more than one distinct food or drink, list each as a separate item rather than combining them: \"\(description)\""
+        if let refinementText, !refinementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            prompt += " Correction from the user, which takes priority over the description above: \"\(refinementText)\""
+        }
+        let parts: [[String: Any]] = [["text": prompt]]
+        return try await send(apiKey: apiKey, parts: parts)
+    }
+
+    /// Re-estimates an already-parsed item list using a free-text correction
+    /// — used when refining a text/voice result or an already-saved entry,
+    /// where there's no original photo left to re-send.
+    static func refine(items: [ParsedFoodResult], refinementText: String) async throws -> [ParsedFoodResult] {
+        guard let apiKey = KeychainStore.loadAPIKey(), !apiKey.isEmpty else {
+            throw GeminiFoodServiceError.missingAPIKey
+        }
+        let itemLines = items.map { "- \($0.name): \(Int($0.calories)) cal, \(Int($0.protein))g protein, \(Int($0.carbs))g carbs, \(Int($0.fat))g fat" }.joined(separator: "\n")
+        let prompt = """
+        Here is the current list of food items logged for a meal:
+        \(itemLines)
+
+        Apply this correction from the user and return the corrected, complete item list (including any items that don't need changes): "\(refinementText)"
+        """
         let parts: [[String: Any]] = [["text": prompt]]
         return try await send(apiKey: apiKey, parts: parts)
     }

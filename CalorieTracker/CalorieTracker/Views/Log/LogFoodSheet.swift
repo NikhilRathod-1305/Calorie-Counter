@@ -36,7 +36,10 @@ struct LogFoodSheet: View {
     @State private var photoPickerItem: PhotosPickerItem?
     @State private var capturedImage: UIImage?
     @State private var saveCapturedPhoto = false
-    @State private var scanRefinementText: String = ""
+
+    // Refinement — lets the user correct any pending result (scan, text,
+    // voice, or an already-saved entry being edited) with a free-text note.
+    @State private var refinementText: String = ""
     @FocusState private var isRefinementFieldFocused: Bool
 
     // Barcode
@@ -185,10 +188,11 @@ struct LogFoodSheet: View {
 
     private func resetTransient() {
         pendingResults = []
+        removedSourceEntries = []
         errorMessage = nil
         capturedImage = nil
         saveCapturedPhoto = false
-        scanRefinementText = ""
+        refinementText = ""
         speech.stop()
         speech.transcript = ""
         textDraft = ""
@@ -360,11 +364,11 @@ struct LogFoodSheet: View {
         isLoading = false
     }
 
-    private func runScan(image: UIImage, refinementText: String? = nil) async {
+    private func runScan(image: UIImage, correction: String? = nil) async {
         isLoading = true
         errorMessage = nil
         do {
-            let results = try await GeminiFoodService.parseImage(image, refinementText: refinementText)
+            let results = try await GeminiFoodService.parseImage(image, refinementText: correction)
             pendingResults = results.map { PendingFoodResult(result: $0) }
         } catch {
             errorMessage = error.localizedDescription
@@ -372,9 +376,35 @@ struct LogFoodSheet: View {
         isLoading = false
     }
 
-    private func rescanWithRefinement() async {
-        guard let capturedImage else { return }
-        await runScan(image: capturedImage, refinementText: scanRefinementText)
+    /// Applies the refinement note to whatever's currently on screen. When a
+    /// captured photo is still available (fresh scan review), it re-sends
+    /// the photo with the correction; otherwise (text/voice review, or
+    /// editing an already-saved entry with no photo on hand) it re-estimates
+    /// from the current item list instead. Either way the result replaces
+    /// what's shown — any items tied to already-saved entries stay queued
+    /// for deletion on save so the refined list is what actually gets saved.
+    private func applyRefinement() async {
+        let trimmed = refinementText.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        isLoading = true
+        errorMessage = nil
+        do {
+            let results: [ParsedFoodResult]
+            if mode == .scan, let capturedImage {
+                results = try await GeminiFoodService.parseImage(capturedImage, refinementText: trimmed)
+            } else {
+                results = try await GeminiFoodService.refine(items: pendingResults.map(\.result), refinementText: trimmed)
+            }
+            // Anything that was tied to a saved entry and isn't part of the
+            // refined list needs deleting on save — the refined cards below
+            // replace them as fresh (unsaved) items.
+            removedSourceEntries.append(contentsOf: pendingResults.compactMap(\.sourceEntry))
+            pendingResults = results.map { PendingFoodResult(result: $0) }
+            refinementText = ""
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isLoading = false
     }
 
     // MARK: Voice
@@ -526,8 +556,8 @@ struct LogFoodSheet: View {
                 resultCard(binding(for: item.id))
             }
 
-            if mode == .scan && editingEntry == nil && capturedImage != nil {
-                scanRefinementField
+            if !pendingResults.isEmpty {
+                refinementField
             }
 
             if editingEntry?.foodItem == nil && editingEntry == nil {
@@ -560,11 +590,7 @@ struct LogFoodSheet: View {
 
             Button {
                 if let editingEntry {
-                    if editingEntry.children?.isEmpty == false {
-                        updateGroupEntry(editingEntry, with: pendingResults, removed: removedSourceEntries)
-                    } else if let first = pendingResults.first {
-                        updateEntry(editingEntry, with: first.result, quantity: first.quantity)
-                    }
+                    saveEditedEntry(editingEntry, with: pendingResults)
                 } else {
                     addAllParsedResults(pendingResults)
                 }
@@ -581,12 +607,12 @@ struct LogFoodSheet: View {
         }
     }
 
-    private var scanRefinementField: some View {
+    private var refinementField: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Correct the scan")
+            Text(editingEntry != nil ? "Refine this entry" : "Refine the result")
                 .font(Theme.Font.text(10))
                 .foregroundStyle(Theme.textFaint)
-            TextEditor(text: $scanRefinementText)
+            TextEditor(text: $refinementText)
                 .scrollContentBackground(.hidden)
                 .font(Theme.Font.text(13))
                 .foregroundStyle(Theme.textPrimary)
@@ -601,8 +627,8 @@ struct LogFoodSheet: View {
                     }
                 }
                 .overlay(alignment: .topLeading) {
-                    if scanRefinementText.isEmpty {
-                        Text("e.g. \"only ate the egg whites\" or \"no butter on the toast\"")
+                    if refinementText.isEmpty {
+                        Text("e.g. \"only ate the egg whites\" or \"remove the toast\"")
                             .font(Theme.Font.text(13))
                             .foregroundStyle(Theme.textFaint)
                             .padding(.horizontal, 14)
@@ -613,10 +639,10 @@ struct LogFoodSheet: View {
 
             Button {
                 isRefinementFieldFocused = false
-                Task { await rescanWithRefinement() }
+                Task { await applyRefinement() }
             } label: {
                 ZStack {
-                    Text("Re-scan with correction")
+                    Text(mode == .scan && capturedImage != nil ? "Re-scan with correction" : "Apply correction")
                         .opacity(isLoading ? 0 : 1)
                     if isLoading { ProgressView().tint(Theme.textPrimary) }
                 }
@@ -627,7 +653,7 @@ struct LogFoodSheet: View {
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(Theme.hairline, lineWidth: 1))
             }
             .buttonStyle(.plain)
-            .disabled(isLoading || scanRefinementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            .disabled(isLoading || refinementText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
         }
     }
 
@@ -685,62 +711,36 @@ struct LogFoodSheet: View {
         .glassCardAlt(RoundedRectangle(cornerRadius: 16))
     }
 
-    private func updateEntry(_ entry: MealEntry, with result: ParsedFoodResult, quantity: Double) {
-        if saveToMyFoods && entry.foodItem == nil {
-            let food = FoodItem(
-                name: result.name,
-                calories: result.calories,
-                protein: result.protein,
-                carbs: result.carbs,
-                fat: result.fat,
-                fiber: result.fiber,
-                sugar: result.sugar,
-                sodium: result.sodium,
-                servingSize: 1,
-                servingUnit: "serving",
-                isCustom: true,
-                emoji: FoodCategory.other.emoji
-            )
-            modelContext.insert(food)
-            entry.foodItem = food
-            entry.customFoodName = nil
-            entry.quantity = quantity
-        } else {
-            entry.foodItem = nil
-            entry.customFoodName = result.name
-            entry.quantity = 1
-        }
-        entry.mealType = mealType
-        entry.calories = result.calories * quantity
-        entry.protein = result.protein * quantity
-        entry.carbs = result.carbs * quantity
-        entry.fat = result.fat * quantity
-        entry.fiber = result.fiber * quantity
-        entry.sugar = result.sugar * quantity
-        entry.sodium = result.sodium * quantity
-        try? modelContext.save()
-        onAdded()
-    }
+    /// Saves edits for whatever's currently on screen when editing an
+    /// existing entry — keyed off the *current* shape of `pendingResults`,
+    /// which may no longer match the original entry (e.g. a refinement
+    /// added/removed items, or trimmed a group down to one item).
+    ///
+    /// Any card still tied to a saved MealEntry (`sourceEntry`, untouched by
+    /// a refine) is updated in place; everything else is deleted and the
+    /// current list is (re)inserted fresh under one shared timestamp/input
+    /// method, saved flat if it's a single item or as a parent+children
+    /// group otherwise.
+    private func saveEditedEntry(_ entry: MealEntry, with items: [PendingFoodResult]) {
+        let originalGroup = entry.parent ?? entry
+        let timestamp = originalGroup.timestamp
+        let inputMethod = originalGroup.inputMethod
 
-    /// Writes each edited card back to its underlying child MealEntry,
-    /// deletes any children the user removed, and moves the whole group
-    /// (parent + remaining children) to the selected meal type.
-    private func updateGroupEntry(_ parent: MealEntry, with items: [PendingFoodResult], removed: [MealEntry]) {
-        for removedChild in removed {
+        for removedChild in removedSourceEntries {
             modelContext.delete(removedChild)
         }
+
         guard !items.isEmpty else {
-            // Removed every item — nothing left to group, so drop the
-            // now-empty parent row entirely rather than leaving a shell.
-            modelContext.delete(parent)
+            modelContext.delete(originalGroup)
             try? modelContext.save()
             onAdded()
             return
         }
-        for item in items {
-            guard let child = item.sourceEntry else { continue }
+
+        func apply(_ item: PendingFoodResult, to child: MealEntry) {
             let result = item.result
             let quantity = item.quantity
+            child.foodItem = nil
             child.customFoodName = result.name
             child.quantity = quantity
             child.mealType = mealType
@@ -752,8 +752,42 @@ struct LogFoodSheet: View {
             child.sugar = result.sugar * quantity
             child.sodium = result.sodium * quantity
         }
-        parent.mealType = mealType
-        parent.groupName = multiItemGroupName(for: items)
+
+        if items.count == 1 {
+            let item = items[0]
+            let target = item.sourceEntry ?? MealEntry(mealType: mealType, timestamp: timestamp, inputMethod: inputMethod)
+            if item.sourceEntry == nil {
+                modelContext.insert(target)
+                modelContext.delete(originalGroup)
+            }
+            apply(item, to: target)
+            target.parent = nil
+            target.groupName = nil
+        } else {
+            let groupParent = entry.parent ?? (((entry.children ?? []).isEmpty) ? nil : entry)
+                ?? {
+                    let created = MealEntry(mealType: mealType, timestamp: timestamp, inputMethod: inputMethod)
+                    modelContext.insert(created)
+                    modelContext.delete(entry)
+                    return created
+                }()
+            groupParent.mealType = mealType
+            groupParent.groupName = multiItemGroupName(for: items)
+
+            var updatedChildren: [MealEntry] = []
+            for item in items {
+                let child = item.sourceEntry ?? {
+                    let created = MealEntry(mealType: mealType, timestamp: timestamp, inputMethod: inputMethod)
+                    modelContext.insert(created)
+                    return created
+                }()
+                apply(item, to: child)
+                child.parent = groupParent
+                updatedChildren.append(child)
+            }
+            groupParent.children = updatedChildren
+        }
+
         try? modelContext.save()
         onAdded()
     }

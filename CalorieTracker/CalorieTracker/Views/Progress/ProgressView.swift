@@ -233,7 +233,9 @@ struct ProgressTabView: View {
     // MARK: Data aggregation
 
     private var mealsByDay: [Date: [MealEntry]] {
-        Dictionary(grouping: mealEntries) { calendar.startOfDay(for: $0.timestamp) }
+        // Only top-level entries — a multi-item scan's nested items are
+        // counted via the parent's totalNutrition, not counted separately.
+        Dictionary(grouping: mealEntries.filter(\.isTopLevel)) { calendar.startOfDay(for: $0.timestamp) }
     }
 
     private var waterByDay: [Date: Int] {
@@ -248,7 +250,7 @@ struct ProgressTabView: View {
 
     private var caloriePoints: [MetricChartPoint] {
         windowDays.map { day in
-            let total = (mealsByDay[day] ?? []).reduce(0.0) { $0 + $1.nutrition.calories }
+            let total = (mealsByDay[day] ?? []).reduce(0.0) { $0 + $1.totalNutrition.calories }
             return MetricChartPoint(date: day, value: total)
         }
     }
@@ -275,7 +277,7 @@ struct ProgressTabView: View {
             guard !entries.isEmpty else {
                 return NutritionDayBreakdown(date: day, carbsPct: 0, proteinPct: 0, fatPct: 0)
             }
-            let totals = entries.reduce(NutritionValues.zero) { $0 + $1.nutrition }
+            let totals = entries.reduce(NutritionValues.zero) { $0 + $1.totalNutrition }
             let carbsCal = totals.carbs * 4
             let proteinCal = totals.protein * 4
             let fatCal = totals.fat * 9

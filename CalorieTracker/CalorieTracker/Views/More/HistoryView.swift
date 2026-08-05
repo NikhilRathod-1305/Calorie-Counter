@@ -69,7 +69,7 @@ private enum LogItem: Identifiable {
 
     var trailingText: String {
         switch self {
-        case .meal(let e): return "\(Int(e.nutrition.calories)) kcal"
+        case .meal(let e): return "\(Int(e.totalNutrition.calories)) kcal"
         case .exercise(let e): return "-\(Int(e.caloriesBurned)) kcal"
         case .weight(let e): return "\(String(format: "%.1f", e.weightKg)) kg"
         case .water(let e): return "\(e.milliliters) ml"
@@ -119,7 +119,9 @@ struct HistoryView: View {
 
     private var allItems: [LogItem] {
         var items: [LogItem] = []
-        items.append(contentsOf: mealEntries.map(LogItem.meal))
+        // A multi-item scan's nested items are nested under one parent row's
+        // group total here — they don't get their own top-level history row.
+        items.append(contentsOf: mealEntries.filter(\.isTopLevel).map(LogItem.meal))
         items.append(contentsOf: exerciseEntries.map(LogItem.exercise))
         items.append(contentsOf: weightEntries.map(LogItem.weight))
         items.append(contentsOf: waterEntries.map(LogItem.water))
@@ -151,8 +153,8 @@ struct HistoryView: View {
     private var todaysCalories: Int {
         let cal = Calendar.current
         return mealEntries
-            .filter { cal.isDateInToday($0.timestamp) }
-            .reduce(0) { $0 + Int($1.nutrition.calories) }
+            .filter { $0.isTopLevel && cal.isDateInToday($0.timestamp) }
+            .reduce(0) { $0 + Int($1.totalNutrition.calories) }
     }
 
     private var todaysLogCount: Int {

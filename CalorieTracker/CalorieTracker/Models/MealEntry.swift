@@ -20,6 +20,17 @@ final class MealEntry {
     var sugar: Double
     var sodium: Double
 
+    /// When set, this entry is one food item nested inside a multi-item scan
+    /// (e.g. "eggs" within a plate that also had toast and juice) rather than
+    /// its own top-level log row. Deleting the parent cascades to children.
+    @Relationship(deleteRule: .cascade, inverse: \MealEntry.parent)
+    var children: [MealEntry]?
+    var parent: MealEntry?
+
+    /// A display name for the group, shown on the collapsed parent row —
+    /// only meaningful when `children` is non-empty.
+    var groupName: String?
+
     init(
         foodItem: FoodItem? = nil,
         customFoodName: String? = nil,
@@ -34,7 +45,8 @@ final class MealEntry {
         fat: Double = 0,
         fiber: Double = 0,
         sugar: Double = 0,
-        sodium: Double = 0
+        sodium: Double = 0,
+        groupName: String? = nil
     ) {
         self.id = UUID()
         self.foodItem = foodItem
@@ -51,17 +63,31 @@ final class MealEntry {
         self.fiber = fiber
         self.sugar = sugar
         self.sodium = sodium
+        self.groupName = groupName
     }
+
+    /// True for entries that should appear as their own row/be counted in
+    /// totals directly — i.e. not nested inside a parent multi-item scan.
+    var isTopLevel: Bool { parent == nil }
 
     var displayName: String {
-        foodItem?.name ?? customFoodName ?? "Unknown Food"
+        groupName ?? foodItem?.name ?? customFoodName ?? "Unknown Food"
     }
 
+    /// Nutrition for this entry alone. For a parent with children, use
+    /// `totalNutrition` instead to include the nested items.
     var nutrition: NutritionValues {
         if let food = foodItem {
             return food.nutritionFor(quantity: quantity)
         }
         return NutritionValues(calories: calories, protein: protein, carbs: carbs, fat: fat, fiber: fiber, sugar: sugar, sodium: sodium)
+    }
+
+    /// This entry's own nutrition plus all of its children's — what should
+    /// be shown/summed for a parent row on the dashboard.
+    var totalNutrition: NutritionValues {
+        let childrenTotal = (children ?? []).reduce(NutritionValues.zero) { $0 + $1.nutrition }
+        return nutrition + childrenTotal
     }
 
     var dominantMacroColor: Color {

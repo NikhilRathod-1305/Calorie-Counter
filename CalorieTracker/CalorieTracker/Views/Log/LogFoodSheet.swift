@@ -16,6 +16,10 @@ struct PendingFoodResult: Identifiable {
     let id = UUID()
     var result: ParsedFoodResult
     var quantity: Double = 1
+    /// Set when this card represents an existing MealEntry being edited
+    /// (either the single entry being edited, or one child of a group) —
+    /// nil for freshly scanned/parsed results that haven't been saved yet.
+    var sourceEntry: MealEntry?
 }
 
 struct LogFoodSheet: View {
@@ -49,6 +53,8 @@ struct LogFoodSheet: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var saveToMyFoods: Bool
+    /// Children removed from a group while editing — deleted on save.
+    @State private var removedSourceEntries: [MealEntry] = []
 
     init(initialMode: LogMode, mealType: MealType = MealType.currentMealType, editingEntry: MealEntry? = nil, onClose: @escaping () -> Void, onAdded: @escaping () -> Void) {
         self.initialMode = initialMode
@@ -61,19 +67,43 @@ struct LogFoodSheet: View {
         // explicit opt-in rather than a side effect of just editing a quantity/value.
         _saveToMyFoods = State(initialValue: editingEntry == nil)
         if let editingEntry {
-            _pendingResults = State(initialValue: [PendingFoodResult(
-                result: ParsedFoodResult(
-                    name: editingEntry.displayName,
-                    calories: editingEntry.nutrition.calories,
-                    protein: editingEntry.nutrition.protein,
-                    carbs: editingEntry.nutrition.carbs,
-                    fat: editingEntry.nutrition.fat,
-                    fiber: editingEntry.nutrition.fiber,
-                    sugar: editingEntry.nutrition.sugar,
-                    sodium: editingEntry.nutrition.sodium
-                ),
-                quantity: editingEntry.quantity
-            )])
+            let children = (editingEntry.children ?? []).sorted { $0.timestamp < $1.timestamp }
+            if !children.isEmpty {
+                // Editing a multi-item group: one card per nested food so
+                // each can be adjusted (or removed) independently, same as
+                // the original multi-item scan review screen.
+                _pendingResults = State(initialValue: children.map { child in
+                    PendingFoodResult(
+                        result: ParsedFoodResult(
+                            name: child.displayName,
+                            calories: child.nutrition.calories,
+                            protein: child.nutrition.protein,
+                            carbs: child.nutrition.carbs,
+                            fat: child.nutrition.fat,
+                            fiber: child.nutrition.fiber,
+                            sugar: child.nutrition.sugar,
+                            sodium: child.nutrition.sodium
+                        ),
+                        quantity: child.quantity,
+                        sourceEntry: child
+                    )
+                })
+            } else {
+                _pendingResults = State(initialValue: [PendingFoodResult(
+                    result: ParsedFoodResult(
+                        name: editingEntry.displayName,
+                        calories: editingEntry.nutrition.calories,
+                        protein: editingEntry.nutrition.protein,
+                        carbs: editingEntry.nutrition.carbs,
+                        fat: editingEntry.nutrition.fat,
+                        fiber: editingEntry.nutrition.fiber,
+                        sugar: editingEntry.nutrition.sugar,
+                        sodium: editingEntry.nutrition.sodium
+                    ),
+                    quantity: editingEntry.quantity,
+                    sourceEntry: editingEntry
+                )])
+            }
         }
     }
 
@@ -484,7 +514,9 @@ struct LogFoodSheet: View {
             }
 
             if pendingResults.count > 1 {
-                Text("\(pendingResults.count) items detected — adjust portions below, or remove any you didn't eat.")
+                Text(editingEntry != nil
+                     ? "\(pendingResults.count) items in this meal — adjust portions below, or remove any you didn't eat."
+                     : "\(pendingResults.count) items detected — adjust portions below, or remove any you didn't eat.")
                     .font(Theme.Font.text(11))
                     .foregroundStyle(Theme.textFaint)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -527,8 +559,12 @@ struct LogFoodSheet: View {
             }
 
             Button {
-                if let editingEntry, let first = pendingResults.first {
-                    updateEntry(editingEntry, with: first.result, quantity: first.quantity)
+                if let editingEntry {
+                    if editingEntry.children?.isEmpty == false {
+                        updateGroupEntry(editingEntry, with: pendingResults, removed: removedSourceEntries)
+                    } else if let first = pendingResults.first {
+                        updateEntry(editingEntry, with: first.result, quantity: first.quantity)
+                    }
                 } else {
                     addAllParsedResults(pendingResults)
                 }
@@ -630,6 +666,9 @@ struct LogFoodSheet: View {
                 }
                 if pendingResults.count > 1 {
                     Button {
+                        if let source = item.wrappedValue.sourceEntry {
+                            removedSourceEntries.append(source)
+                        }
                         pendingResults.removeAll { $0.id == item.wrappedValue.id }
                     } label: {
                         Image(systemName: "trash")
@@ -683,6 +722,42 @@ struct LogFoodSheet: View {
         onAdded()
     }
 
+    /// Writes each edited card back to its underlying child MealEntry,
+    /// deletes any children the user removed, and moves the whole group
+    /// (parent + remaining children) to the selected meal type.
+    private func updateGroupEntry(_ parent: MealEntry, with items: [PendingFoodResult], removed: [MealEntry]) {
+        for removedChild in removed {
+            modelContext.delete(removedChild)
+        }
+        guard !items.isEmpty else {
+            // Removed every item — nothing left to group, so drop the
+            // now-empty parent row entirely rather than leaving a shell.
+            modelContext.delete(parent)
+            try? modelContext.save()
+            onAdded()
+            return
+        }
+        for item in items {
+            guard let child = item.sourceEntry else { continue }
+            let result = item.result
+            let quantity = item.quantity
+            child.customFoodName = result.name
+            child.quantity = quantity
+            child.mealType = mealType
+            child.calories = result.calories * quantity
+            child.protein = result.protein * quantity
+            child.carbs = result.carbs * quantity
+            child.fat = result.fat * quantity
+            child.fiber = result.fiber * quantity
+            child.sugar = result.sugar * quantity
+            child.sodium = result.sodium * quantity
+        }
+        parent.mealType = mealType
+        parent.groupName = multiItemGroupName(for: items)
+        try? modelContext.save()
+        onAdded()
+    }
+
     private func editableField(label: String, text: Binding<String>) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label)
@@ -722,7 +797,7 @@ struct LogFoodSheet: View {
         case .browse: inputMethod = .search
         }
 
-        for item in items {
+        func makeEntry(_ item: PendingFoodResult) -> MealEntry {
             let result = item.result
             let quantity = item.quantity
 
@@ -764,8 +839,36 @@ struct LogFoodSheet: View {
                 sodium: result.sodium * quantity
             )
             modelContext.insert(entry)
+            return entry
         }
+
+        if items.count > 1 {
+            // Multiple detected items collapse into one parent "meal" row
+            // with each food nested underneath, rather than several
+            // independent top-level log entries.
+            let parent = MealEntry(
+                mealType: mealType,
+                timestamp: Date(),
+                inputMethod: inputMethod,
+                groupName: multiItemGroupName(for: items)
+            )
+            modelContext.insert(parent)
+            parent.children = items.map { item in
+                let child = makeEntry(item)
+                child.parent = parent
+                return child
+            }
+        } else if let only = items.first {
+            _ = makeEntry(only)
+        }
+
         try? modelContext.save()
         onAdded()
+    }
+
+    private func multiItemGroupName(for items: [PendingFoodResult]) -> String {
+        let names = items.prefix(3).map { $0.result.name }
+        let joined = names.joined(separator: ", ")
+        return items.count > 3 ? "\(joined) + \(items.count - 3) more" : joined
     }
 }

@@ -16,6 +16,7 @@ struct FoodBrowseView: View {
     @Query(sort: \MealEntry.timestamp, order: .reverse) private var allEntries: [MealEntry]
 
     let mealType: MealType
+    let date: Date
     let onAdded: () -> Void
 
     @State private var query: String = ""
@@ -369,13 +370,23 @@ struct FoodBrowseView: View {
         }
     }
 
+    /// The selected day combined with the current time-of-day, so entries
+    /// logged for a past day still sort sensibly instead of all landing at
+    /// midnight.
+    private var entryTimestamp: Date {
+        let cal = Calendar.current
+        guard !cal.isDateInToday(date) else { return Date() }
+        let time = cal.dateComponents([.hour, .minute, .second], from: Date())
+        return cal.date(bySettingHour: time.hour ?? 0, minute: time.minute ?? 0, second: time.second ?? 0, of: date) ?? date
+    }
+
     private func addFoodItem(_ food: FoodItem, quantity: Double) {
         let nutrition = food.nutritionFor(quantity: food.servingSize * quantity)
         let entry = MealEntry(
             foodItem: food,
             quantity: food.servingSize * quantity,
             mealType: mealType,
-            timestamp: Date(),
+            timestamp: entryTimestamp,
             inputMethod: .search,
             calories: nutrition.calories,
             protein: nutrition.protein,

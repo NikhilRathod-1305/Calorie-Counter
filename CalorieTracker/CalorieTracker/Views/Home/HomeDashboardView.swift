@@ -90,6 +90,7 @@ struct HomeDashboardView: View {
             LogFoodSheet(
                 initialMode: .browse,
                 mealType: meal,
+                date: viewedDate,
                 onClose: { sheetMealType = nil },
                 onAdded: {
                     sheetMealType = nil

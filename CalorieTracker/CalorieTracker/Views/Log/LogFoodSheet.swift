@@ -26,6 +26,7 @@ struct LogFoodSheet: View {
     @Environment(\.modelContext) private var modelContext
     let initialMode: LogMode
     let editingEntry: MealEntry?
+    let date: Date
     let onClose: () -> Void
     let onAdded: () -> Void
 
@@ -59,9 +60,10 @@ struct LogFoodSheet: View {
     /// Children removed from a group while editing — deleted on save.
     @State private var removedSourceEntries: [MealEntry] = []
 
-    init(initialMode: LogMode, mealType: MealType = MealType.currentMealType, editingEntry: MealEntry? = nil, onClose: @escaping () -> Void, onAdded: @escaping () -> Void) {
+    init(initialMode: LogMode, mealType: MealType = MealType.currentMealType, editingEntry: MealEntry? = nil, date: Date = Date(), onClose: @escaping () -> Void, onAdded: @escaping () -> Void) {
         self.initialMode = initialMode
         self.editingEntry = editingEntry
+        self.date = date
         self.onClose = onClose
         self.onAdded = onAdded
         _mode = State(initialValue: initialMode)
@@ -128,7 +130,7 @@ struct LogFoodSheet: View {
                 }
 
                 if pendingResults.isEmpty && mode == .browse {
-                    FoodBrowseView(mealType: mealType, onAdded: onAdded)
+                    FoodBrowseView(mealType: mealType, date: date, onAdded: onAdded)
                 } else if wantsFullHeightLiveView {
                     // Live camera/scanner previews want to fill the sheet's
                     // remaining height for easier framing — a ScrollView
@@ -862,7 +864,7 @@ struct LogFoodSheet: View {
                 customFoodName: savedFood == nil ? result.name : nil,
                 quantity: quantity,
                 mealType: mealType,
-                timestamp: Date(),
+                timestamp: entryTimestamp,
                 inputMethod: inputMethod,
                 calories: result.calories * quantity,
                 protein: result.protein * quantity,
@@ -882,7 +884,7 @@ struct LogFoodSheet: View {
             // independent top-level log entries.
             let parent = MealEntry(
                 mealType: mealType,
-                timestamp: Date(),
+                timestamp: entryTimestamp,
                 inputMethod: inputMethod,
                 groupName: multiItemGroupName(for: items)
             )
@@ -898,6 +900,16 @@ struct LogFoodSheet: View {
 
         try? modelContext.save()
         onAdded()
+    }
+
+    /// The selected day combined with the current time-of-day, so entries
+    /// logged for a past day still sort sensibly instead of all landing at
+    /// midnight.
+    private var entryTimestamp: Date {
+        let cal = Calendar.current
+        guard !cal.isDateInToday(date) else { return Date() }
+        let time = cal.dateComponents([.hour, .minute, .second], from: Date())
+        return cal.date(bySettingHour: time.hour ?? 0, minute: time.minute ?? 0, second: time.second ?? 0, of: date) ?? date
     }
 
     private func multiItemGroupName(for items: [PendingFoodResult]) -> String {

@@ -22,8 +22,6 @@ struct CalorieTrackerApp: App {
             context.insert(profile)
             try? context.save()
         }
-
-        DebugDataSeeder.seedWeekIfNeeded(context: context)
     }
 
     var body: some Scene {

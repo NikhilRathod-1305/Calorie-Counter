@@ -4,7 +4,7 @@ import { db, newId } from '../lib/db'
 import { addDays, endOfDay, fmtDay, fmtShort, isSameDay, startOfDay } from '../lib/dates'
 import { bmi, bmiCategory } from '../lib/goals'
 import { entryTotal, sumNutrition } from '../lib/nutrition'
-import { hydrationMl } from '../lib/types'
+import { hydrationMl, type WeightLog } from '../lib/types'
 import { useLatestWeight, useProfile } from '../hooks'
 import { BarChart, LineChart } from '../ui/charts'
 import { ErrorBox, ProgressBar, Segmented, errorMessage, useToast } from '../ui/controls'
@@ -96,15 +96,22 @@ export function Tracker() {
 }
 
 function WeightHistory() {
+  const toast = useToast()
+  const remove = async (w: WeightLog) => {
+    try {
+      await db.weights.delete(w.id)
+      toast('Weight removed', { label: 'Undo', onClick: () => void db.weights.put(w) })
+    } catch { toast('Could not delete') }
+  }
   const recent = useLiveQuery(() => db.weights.orderBy('timestamp').reverse().limit(10).toArray()) ?? []
   if (recent.length === 0) return null
   return (
     <div className="card">
       {recent.map((w) => (
-        <div className="list-row" key={w.id}>
+        <div className="list-row row-enter" key={w.id}>
           <span style={{ flex: 1 }} className="small">{fmtDay(w.timestamp)}</span>
           <span className="num bold">{w.kg.toFixed(1)} kg</span>
-          <button className="swipe-del" aria-label={`Delete weight from ${fmtDay(w.timestamp)}`} onClick={() => db.weights.delete(w.id)}>✕</button>
+          <button className="del-btn" aria-label={`Delete weight from ${fmtDay(w.timestamp)}`} onClick={() => void remove(w)}>✕</button>
         </div>
       ))}
     </div>

@@ -54,12 +54,12 @@ function MainTabs() {
   }
 
   const tabButton = ({ id, label, Icon }: (typeof TABS)[number]) => (
-    <button key={id} className="tab" aria-current={tab === id ? 'page' : undefined} onClick={() => setTab(id)}><Icon />{label}</button>
+    <button key={id} className="tab" aria-current={tab === id ? 'page' : undefined} onClick={() => { setTab(id); window.scrollTo(0, 0) }}><Icon />{label}</button>
   )
 
   return (
     <>
-      <main style={{ height: '100%' }}>
+      <main key={tab} className="tab-view">
         {tab === 'home' && <Home />}
         {tab === 'tracker' && <Tracker />}
         {tab === 'workout' && <WorkoutTab openId={openWorkout} onOpen={setOpenWorkout} />}

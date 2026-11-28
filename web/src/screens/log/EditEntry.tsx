@@ -24,7 +24,11 @@ export function EditEntry({ entry, onClose }: { entry: MealEntry; onClose: () =>
     } catch (e) { setError(errorMessage(e)) }
   }
   const remove = async () => {
-    try { await db.meals.delete(entry.id); toast('Deleted'); onClose() } catch (e) { setError(errorMessage(e)) }
+    try {
+      await db.meals.delete(entry.id)
+      toast(`Deleted ${entry.name}`, { label: 'Undo', onClick: () => void db.meals.put(entry) })
+      onClose()
+    } catch (e) { setError(errorMessage(e)) }
   }
 
   return (
@@ -34,14 +38,14 @@ export function EditEntry({ entry, onClose }: { entry: MealEntry; onClose: () =>
         <Segmented options={MEAL_TYPES} value={draft.mealType} onChange={(mealType) => setDraft((d) => ({ ...d, mealType }))} />
         <div className="card">
           {draft.items.map((it, i) => (
-            <div className="list-row" key={i}>
+            <div className="list-row" key={i} style={{ gap: 8 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 14 }}>{it.name}</div>
                 <div className="tiny faint">{Math.round(itemTotal(it).calories)} cal{it.servingLabel ? ` · ${it.servingLabel} per serving` : ''}</div>
               </div>
               <Stepper value={it.servings} onChange={(v) => setServings(i, v)} step={it.servingLabel === '100g' ? 0.25 : 0.5}
                 format={(v) => (it.servingLabel === '100g' ? `${Math.round(v * 100)}g` : `${v}×`)} />
-              {draft.items.length > 1 && <button className="swipe-del" onClick={() => removeItem(i)}>✕</button>}
+              {draft.items.length > 1 && <button className="del-btn" aria-label={`Remove ${it.name}`} onClick={() => removeItem(i)}>✕</button>}
             </div>
           ))}
         </div>

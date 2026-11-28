@@ -1,32 +1,41 @@
 import { useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db, newId } from '../lib/db'
-import { endOfDay, startOfDay } from '../lib/dates'
-import { CUP_SIZES, DRINKS, hydrationMl, type DrinkType } from '../lib/types'
+import { endOfDay, fmtTime, isSameDay, onDay, startOfDay } from '../lib/dates'
+import { CUP_SIZES, DRINKS, hydrationMl, type DrinkType, type WaterLog } from '../lib/types'
 import { useProfile } from '../hooks'
 import { Sheet } from '../ui/Sheet'
-import { ErrorBox, ProgressBar, errorMessage } from '../ui/controls'
+import { AnimatedNumber, ErrorBox, ProgressBar, errorMessage, useToast } from '../ui/controls'
 
 const DEFAULT_CUP_ML = 250
 
-export function LogWater({ onClose, onSaved }: { onClose: () => void; onSaved: () => void }) {
+export function LogWater({ day, onClose, onSaved }: { day?: number; onClose: () => void; onSaved: () => void }) {
+  const toast = useToast()
   const { profile } = useProfile()
   const [drink, setDrink] = useState<DrinkType>('water')
   const [ml, setMl] = useState<number>(DEFAULT_CUP_ML)
   const [error, setError] = useState<string | null>(null)
-  const today = startOfDay(Date.now())
+  const today = startOfDay(day ?? Date.now())
+  const isToday = isSameDay(today, Date.now())
   const logs = useLiveQuery(() => db.water.where('timestamp').between(today, endOfDay(today), true, true).toArray(), [today]) ?? []
   const total = Math.round(logs.reduce((s, w) => s + hydrationMl(w), 0))
 
   const save = async () => {
-    try { await db.water.add({ id: newId(), timestamp: Date.now(), ml, drink }); onSaved() } catch (e) { setError(errorMessage(e)) }
+    try { await db.water.add({ id: newId(), timestamp: isToday ? Date.now() : onDay(today), ml, drink }); onSaved() } catch (e) { setError(errorMessage(e)) }
+  }
+
+  const remove = async (w: WaterLog) => {
+    try {
+      await db.water.delete(w.id)
+      toast('Drink removed', { label: 'Undo', onClick: () => void db.water.put(w) })
+    } catch (e) { setError(errorMessage(e)) }
   }
 
   return (
     <Sheet title="Log Drink" onClose={onClose}>
       <div className="stack">
         <div className="card card-pad">
-          <div className="row"><span className="num bold" style={{ fontSize: 24, color: 'var(--water)' }}>{total} ml</span><span className="muted small">of {profile.waterGoalMl} ml today</span></div>
+          <div className="row"><span className="num bold" style={{ fontSize: 24, color: 'var(--water)' }}><AnimatedNumber value={total} /> ml</span><span className="muted small">of {profile.waterGoalMl} ml {isToday ? 'today' : 'that day'}</span></div>
           <div style={{ marginTop: 10 }}><ProgressBar value={total} max={profile.waterGoalMl} color="var(--water)" /></div>
         </div>
         <div className="section-label">Drink</div>
@@ -43,7 +52,22 @@ export function LogWater({ onClose, onSaved }: { onClose: () => void; onSaved: (
         </div>
         {DRINKS[drink].factor < 1 && <div className="tiny faint">{DRINKS[drink].label} counts {Math.round(DRINKS[drink].factor * 100)}% toward hydration.</div>}
         <ErrorBox message={error} />
-        <button className="btn btn-primary btn-block" style={{ background: 'var(--water)' }} onClick={save}>Add {ml} ml</button>
+        <button className="btn btn-primary btn-block" style={{ background: 'var(--water)', color: '#fff' }} onClick={save}>Add {ml} ml</button>
+        {logs.length > 0 && (
+          <>
+            <div className="section-label">{isToday ? 'Today' : 'That day'}</div>
+            <div className="card">
+              {[...logs].sort((a, b) => b.timestamp - a.timestamp).map((w) => (
+                <div className="list-row row-enter" key={w.id}>
+                  <span aria-hidden="true" style={{ fontSize: 20 }}>{DRINKS[w.drink]?.emoji ?? '💧'}</span>
+                  <span style={{ flex: 1 }} className="small">{DRINKS[w.drink]?.label ?? 'Drink'} · {w.ml} ml</span>
+                  <span className="tiny faint">{fmtTime(w.timestamp)}</span>
+                  <button className="del-btn" aria-label={`Remove ${DRINKS[w.drink]?.label ?? 'drink'} at ${fmtTime(w.timestamp)}`} onClick={() => void remove(w)}>✕</button>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </Sheet>
   )

@@ -52,6 +52,12 @@ await page.getByRole('button', { name: 'Remove Roti' }).waitFor()
 await shot('02-review')
 await page.getByRole('button', { name: 'Add to Diary' }).click()
 await page.getByText('Dal & Roti').waitFor()
+// The ring number counts up; wait until it stops changing before reading it.
+await page.waitForFunction(() => {
+  const el = document.querySelectorAll('.num')[1]
+  const v = el?.textContent
+  return new Promise((r) => setTimeout(() => r(el?.textContent === v), 900))
+})
 const remaining = await page.locator('.num').nth(1).textContent()
 await shot('03-home')
 step(`AI text log (ring shows ${remaining})`)
@@ -79,6 +85,49 @@ page.once('dialog', (d) => d.accept())
 await page.getByRole('button', { name: 'Finish' }).click()
 await page.getByText(/sets · /).first().waitFor()
 step('workout routine + text log + finish')
+
+// Home extras: quick water + undo, activity log + delete, meal delete + undo, swipe-down dismiss
+const nav = page.getByRole('navigation', { name: 'Main' })
+await nav.getByRole('button', { name: 'Home' }).click()
+const fail = (msg) => { throw new Error(msg) }
+await page.getByRole('button', { name: 'Add 250 ml water' }).click()
+await page.getByText('750 / 2000 ml').waitFor()
+await page.getByRole('button', { name: 'Undo' }).click()
+await page.getByText('500 / 2000 ml').waitFor()
+step('quick water + undo')
+
+await page.getByRole('button', { name: 'Quick log' }).click()
+await page.getByRole('button', { name: 'Calories Burned' }).click()
+await page.getByLabel('Activity').fill('Badminton')
+await page.getByLabel('Calories (kcal)').fill('300')
+await page.getByRole('button', { name: 'Save' }).click()
+await page.getByText('Badminton').waitFor()
+await page.getByText('300 kcal burned', { exact: false }).first().waitFor()
+await page.getByRole('button', { name: 'Delete Badminton' }).click()
+await page.getByText('Badminton').waitFor({ state: 'detached' })
+step('activity listed + deleted')
+
+await page.getByRole('button', { name: /Dal & Roti/ }).click()
+await page.getByRole('button', { name: 'Delete', exact: true }).click()
+const dalRow = page.getByRole('button', { name: /^Dal & Roti 2 items/ })
+await dalRow.waitFor({ state: 'detached' })
+await page.getByRole('button', { name: 'Undo' }).click()
+await dalRow.waitFor()
+step('meal delete + undo')
+
+await page.getByRole('button', { name: 'Water', exact: false }).filter({ hasText: 'Water' }).first().click()
+const sheet = page.getByRole('dialog', { name: 'Log Drink' })
+await sheet.waitFor()
+await page.getByRole('button', { name: /Remove Water at/ }).first().waitFor()
+await page.waitForTimeout(500) // let the open animation finish before measuring
+const head = await sheet.locator('.sheet-head').boundingBox()
+await page.mouse.move(head.x + 40, head.y + 30)
+await page.mouse.down()
+for (let i = 1; i <= 8; i++) await page.mouse.move(head.x + 40, head.y + 30 + i * 30)
+await page.mouse.up()
+await sheet.waitFor({ state: 'detached' })
+if (!(await nav.isVisible())) fail('tab bar did not come back after closing sheet')
+step('drink list + swipe-down dismiss')
 
 // Reload: data persists in IndexedDB
 await page.reload()

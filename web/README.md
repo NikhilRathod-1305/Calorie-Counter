@@ -27,3 +27,9 @@ One-time setup: repo Settings → Pages → Source: **GitHub Actions**.
 - No Apple Health steps and no Siri shortcuts (browsers can't access them).
 - Voice is recorded and sent straight to Gemini (no on-device speech recognition).
 - Workout calories are a MET-based estimate from session time and body weight.
+
+## Shortcuts & badge (More → Shortcuts & badge)
+- **Icon badge**: calories left, glasses of water left (250 ml) or main meals left, shown on the Home Screen icon. iOS 16.4+ only shows it after notifications are allowed for the app; it updates whenever the app is used, not while it's closed.
+- **Hold +**: jumps straight to a chosen log screen (default: voice). A tap still opens the Quick Log menu.
+- **Open app to**: launch screen, also applied when the app returns after 10+ minutes in the background.
+- Real iOS widgets aren't possible for web apps.

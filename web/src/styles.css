@@ -117,6 +117,8 @@ textarea.input { min-height: 90px; resize: vertical; }
   box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 40%, transparent); }
 .fab svg { width: 26px; height: 26px; }
 .fab:active { transform: scale(.94); }
+.fab { transition: transform .45s var(--ease-out), box-shadow .45s; }
+.fab.holding { transform: scale(1.12); box-shadow: 0 0 0 10px color-mix(in srgb, var(--accent) 22%, transparent), 0 6px 18px color-mix(in srgb, var(--accent) 45%, transparent); }
 
 /* Sheets */
 body:has(.overlay) .tabbar { transform: translateY(110%); }
@@ -231,3 +233,11 @@ body:has(.overlay) .tabbar { transform: translateY(110%); }
 .water-emoji { font-size: 30px; width: 44px; text-align: center; }
 .water-add { flex-shrink: 0; min-width: 64px; height: 40px; padding: 0 12px; border-radius: 999px; background: var(--water-soft); color: var(--water); font-weight: 700; font-size: 14px; transition: transform .18s var(--ease-out); }
 .water-add:active { transform: scale(.92); }
+
+/* Settings rows with an inline picker */
+.setting-row { cursor: pointer; }
+.setting-select { -webkit-appearance: none; appearance: none; border: 0; background: var(--card-alt); color: var(--text-2); font-size: 16px; font-weight: 500;
+  padding: 7px 28px 7px 12px; border-radius: 999px; max-width: 52%; text-overflow: ellipsis;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 15px) 52%, calc(100% - 10px) 52%; background-size: 5px 5px; background-repeat: no-repeat; }
+.setting-select:focus { outline: 2px solid var(--accent); }

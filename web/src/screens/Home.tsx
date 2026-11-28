@@ -4,7 +4,7 @@ import { db, newId } from '../lib/db'
 import { addDays, dayLabel, endOfDay, fmtTime, isSameDay, startOfDay } from '../lib/dates'
 import { entryTotal, formatServings, sumNutrition } from '../lib/nutrition'
 import { MEAL_EMOJI, MEAL_TYPES, hydrationMl, type ExerciseLog, type MealEntry, type MealType, type WorkoutSession } from '../lib/types'
-import { estimateSessionCalories, sessionMinutes } from '../lib/workout'
+import { dayBurnedCalories, estimateSessionCalories, sessionMinutes } from '../lib/workout'
 import { useProfile } from '../hooks'
 import { AnimatedNumber, ProgressBar, Ring, useToast } from '../ui/controls'
 import { LogFood } from './log/LogFood'
@@ -44,10 +44,7 @@ export function Home() {
   const finished = workouts.filter((w) => w.endedAt)
 
   const totals = sumNutrition(meals.map(entryTotal))
-  const burned = Math.round(
-    exercise.reduce((s, e) => s + e.calories, 0) +
-    finished.reduce((s, w) => s + estimateSessionCalories(w, profile.weightKg), 0),
-  )
+  const burned = dayBurnedCalories(exercise, finished, profile.weightKg)
   const remaining = goals.calorieGoal - Math.round(totals.calories) + burned
 
   const addWater = async () => {

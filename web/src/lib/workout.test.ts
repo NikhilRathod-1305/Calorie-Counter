@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { applyCommands, estimateSessionCalories, exerciseGroups, sessionFromRoutine, sessionVolumeKg, setsFromCommand, setSummary } from './workout'
+import { applyCommands, dayBurnedCalories, estimateSessionCalories, exerciseGroups, sessionFromRoutine, sessionVolumeKg, setsFromCommand, setSummary } from './workout'
 import type { WorkoutSession } from './types'
 
 const session = (over: Partial<WorkoutSession> = {}): WorkoutSession => ({
@@ -82,5 +82,18 @@ describe('sessionFromRoutine', () => {
     expect(s.sets).toHaveLength(4)
     expect(s.sets[0]).toMatchObject({ reps: 8, weightKg: 60, completed: false })
     expect(s.sets[3]).toMatchObject({ isCardio: true, minutes: 10 })
+  })
+})
+
+describe('dayBurnedCalories', () => {
+  test('adds logged exercise to finished workouts and skips unfinished ones', () => {
+    const start = 1_700_000_000_000
+    const finished: WorkoutSession = { id: 'a', name: 'W', startedAt: start, endedAt: start + 30 * 60_000, sets: [] }
+    const open: WorkoutSession = { id: 'b', name: 'W', startedAt: start, sets: [] }
+    const exercise = [{ id: 'e', timestamp: start, name: 'Run', calories: 200 }]
+
+    const total = dayBurnedCalories(exercise, [finished, open], 80)
+
+    expect(total).toBe(Math.round(200 + estimateSessionCalories(finished, 80)))
   })
 })

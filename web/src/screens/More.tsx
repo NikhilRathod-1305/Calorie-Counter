@@ -3,7 +3,9 @@ import { db, exportAll, importBackup, newId, saveProfile } from '../lib/db'
 import { parseIosExportCsv } from '../lib/csvImport'
 import { loadApiKey, saveApiKey } from '../lib/settings'
 import type { Appearance, Profile } from '../lib/goals'
-import { useProfile } from '../hooks'
+import { usePrefs, useProfile } from '../hooks'
+import { applyBadge, badgeSupported } from '../lib/badge'
+import { ACTION_LABELS, BADGE_LABELS, BADGE_MODES, LAUNCH_ACTIONS, QUICK_ACTIONS, savePrefs, type BadgeMode, type LaunchAction, type QuickAction } from '../lib/prefs'
 import { Sheet } from '../ui/Sheet'
 import { ErrorBox, Segmented, errorMessage, useToast } from '../ui/controls'
 import { ProfileForm, validateProfile } from './ProfileForm'
@@ -73,6 +75,8 @@ export function More() {
           {row('✨', 'Gemini API Key', loadApiKey() ? 'Set' : 'Not set', () => setPanel('key'))}
           {row('📲', 'Install on iPhone', '', () => setPanel('install'))}
         </div>
+
+        <ShortcutSettings />
 
         <div className="section-label">Appearance</div>
         <Segmented options={['System', 'Light', 'Dark'] as const} value={profile.appearance} onChange={setAppearance} />
@@ -147,5 +151,58 @@ function InstallHelp({ onClose }: { onClose: () => void }) {
         <div className="muted">Data saved in Safari and data in the Home Screen app are separate. Start using the Home Screen app, or move data with Back up / Restore.</div>
       </div>
     </Sheet>
+  )
+}
+
+/** Badge permission flow: iOS shows a web app's icon badge only after notifications are allowed. */
+async function ensureBadgePermission(): Promise<string | null> {
+  if (!badgeSupported()) return 'Icon badges work once the app is added to your Home Screen (iOS 16.4 or later).'
+  if (typeof Notification === 'undefined' || Notification.permission === 'granted') return null
+  const result = await Notification.requestPermission()
+  return result === 'granted' ? null
+    : 'iPhone only shows the icon number after notifications are allowed. Turn them on in Settings → Notifications → Count on Me, then pick a badge again.'
+}
+
+function ShortcutSettings() {
+  const prefs = usePrefs()
+  const toast = useToast()
+  const [note, setNote] = useState<string | null>(null)
+
+  const setBadge = async (badge: BadgeMode) => {
+    setNote(null)
+    savePrefs({ ...prefs, badge })
+    if (badge === 'off') { void applyBadge(0); return }
+    const problem = await ensureBadgePermission()
+    if (problem) setNote(problem)
+    else toast(`Badge: ${BADGE_LABELS[badge]}`)
+  }
+
+  return (
+    <>
+      <div className="section-label">Shortcuts & badge</div>
+      <div className="card">
+        <SettingRow emoji="🔴" label="Icon badge" value={prefs.badge} options={BADGE_MODES} labels={BADGE_LABELS} onChange={(v) => void setBadge(v)} />
+        <SettingRow emoji="👆" label="Hold + to open" value={prefs.longPress} options={QUICK_ACTIONS} labels={ACTION_LABELS} onChange={(longPress: QuickAction) => savePrefs({ ...prefs, longPress })} />
+        <SettingRow emoji="🚀" label="Open app to" value={prefs.launch} options={LAUNCH_ACTIONS} labels={ACTION_LABELS} onChange={(launch: LaunchAction) => savePrefs({ ...prefs, launch })} />
+      </div>
+      {note && <div className="info-box small">{note}</div>}
+      <div className="tiny faint" style={{ padding: '0 4px' }}>
+        Tap + for the Quick Log menu, or hold it to jump straight to {ACTION_LABELS[prefs.longPress].toLowerCase()}. The badge updates whenever you use the app.
+      </div>
+    </>
+  )
+}
+
+function SettingRow<T extends string>({ emoji, label, value, options, labels, onChange }: {
+  emoji: string; label: string; value: T; options: readonly T[]; labels: Record<T, string>; onChange: (v: T) => void
+}) {
+  return (
+    <label className="list-row setting-row">
+      <span style={{ fontSize: 20, width: 28, textAlign: 'center' }} aria-hidden="true">{emoji}</span>
+      <span style={{ flex: 1 }}>{label}</span>
+      <select className="setting-select" value={value} aria-label={label} onChange={(e) => onChange(e.target.value as T)}>
+        {options.map((o) => <option key={o} value={o}>{labels[o]}</option>)}
+      </select>
+    </label>
   )
 }

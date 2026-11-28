@@ -1,5 +1,5 @@
 import type { ParsedWorkoutCommand } from './gemini'
-import type { Routine, WorkoutSession, WorkoutSet } from './types'
+import type { ExerciseLog, Routine, WorkoutSession, WorkoutSet } from './types'
 
 const CARDIO_MET = 7
 const STRENGTH_MET = 5
@@ -78,4 +78,12 @@ export function applyCommands(active: WorkoutSession | null, cmds: readonly Pars
     }
   }
   return { session: finished ? { ...session, endedAt: now } : session, finished, added }
+}
+
+/** Calories burned in a day: logged exercise plus estimates for finished workouts. */
+export function dayBurnedCalories(exercise: readonly ExerciseLog[], workouts: readonly WorkoutSession[], bodyKg: number): number {
+  return Math.round(
+    exercise.reduce((sum, e) => sum + e.calories, 0) +
+    workouts.filter((w) => w.endedAt).reduce((sum, w) => sum + estimateSessionCalories(w, bodyKg), 0),
+  )
 }

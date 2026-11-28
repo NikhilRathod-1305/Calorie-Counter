@@ -141,6 +141,45 @@ await page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name:
 await shot('06-home-dark')
 step('dark mode')
 
+// Shortcuts: icon badge, hold + for voice, open-app-to setting
+await page.context().grantPermissions(['notifications'])
+await page.evaluate(() => {
+  window.__badges = []
+  navigator.setAppBadge = async (n) => { window.__badges.push(n) }
+  navigator.clearAppBadge = async () => { window.__badges.push(0) }
+})
+await nav.getByRole('button', { name: 'More' }).click()
+await page.getByLabel('Icon badge').selectOption('calories')
+await page.waitForFunction(() => window.__badges.length > 0)
+const badge = await page.evaluate(() => window.__badges.at(-1))
+if (badge !== Number(remaining)) fail(`badge ${badge} should match the Home ring ${remaining}`)
+await page.getByLabel('Icon badge').selectOption('water')
+await page.waitForFunction(() => window.__badges.at(-1) === 6) // 500 of 2000 ml → 6 glasses of 250 ml
+step(`icon badge (calories ${badge}, water 6 glasses)`)
+
+const fabBox = await nav.getByRole('button', { name: 'Quick log' }).boundingBox()
+await page.mouse.move(fabBox.x + fabBox.width / 2, fabBox.y + fabBox.height / 2)
+await page.mouse.down()
+await page.waitForTimeout(600)
+await page.mouse.up()
+await page.getByRole('button', { name: 'Start recording' }).waitFor()
+if (await page.getByRole('dialog', { name: 'Quick Log' }).count()) fail('long-press should skip the Quick Log menu')
+await page.getByRole('button', { name: 'Close' }).click()
+await page.getByRole('dialog').waitFor({ state: 'detached' })
+await nav.getByRole('button', { name: 'Quick log' }).click()
+await page.getByRole('dialog', { name: 'Quick Log' }).waitFor()
+await page.getByRole('button', { name: 'Close' }).click()
+await page.getByRole('dialog').waitFor({ state: 'detached' })
+step('tap + opens menu, hold + opens voice log')
+
+await page.getByLabel('Open app to').selectOption('water')
+await page.reload()
+await page.getByRole('dialog', { name: 'Log Drink' }).waitFor()
+await page.getByRole('button', { name: 'Close' }).click()
+await page.getByRole('dialog').waitFor({ state: 'detached' })
+if (await page.getByRole('dialog', { name: 'Quick Log' }).count()) fail('closing a launch panel should not leave the menu open')
+step('open-app-to setting')
+
 const swReady = await page.evaluate(async () => !!(await navigator.serviceWorker.ready))
 step(`service worker ready: ${swReady}`)
 

@@ -23,7 +23,7 @@ export function QuickLog({ onClose, onStartWorkout }: { onClose: () => void; onS
 
   return (
     <>
-      <Sheet title="Quick Log" onClose={onClose}>
+      {!panel && <Sheet title="Quick Log" onClose={onClose}>
         <div className="tile-grid">
           {TILES.map((t) => (
             <button key={t.label} className="tile" onClick={() => setPanel(t.panel)}>
@@ -34,7 +34,7 @@ export function QuickLog({ onClose, onStartWorkout }: { onClose: () => void; onS
             <span className="emoji" aria-hidden="true">🏋️</span>Start Workout
           </button>
         </div>
-      </Sheet>
+      </Sheet>}
       {panel?.kind === 'food' && <LogFood initialMode={panel.mode} onClose={() => setPanel(null)} onAdded={() => done()} />}
       {panel?.kind === 'water' && <LogWater onClose={() => setPanel(null)} onSaved={() => done('Water logged')} />}
       {panel?.kind === 'exercise' && <LogExercise onClose={() => setPanel(null)} onSaved={() => done('Exercise logged')} />}

@@ -6,6 +6,7 @@ struct HomeDashboardView: View {
     @Query(sort: \MealEntry.timestamp) private var allEntries: [MealEntry]
     @Query private var profiles: [UserProfile]
     @Query(sort: \ExerciseEntry.timestamp) private var exerciseEntries: [ExerciseEntry]
+    @Query(sort: \WorkoutSession.startedAt) private var workoutSessions: [WorkoutSession]
 
     @State private var viewedDate: Date = Calendar.current.startOfDay(for: Date())
     @State private var sheetMealType: MealType?
@@ -28,12 +29,21 @@ struct HomeDashboardView: View {
         return exerciseEntries.filter { cal.isDate($0.timestamp, inSameDayAs: viewedDate) }
     }
 
+    /// Only completed sessions started on the viewed day — an in-progress
+    /// session shouldn't contribute to the day's burned-calorie total yet.
+    private var viewedWorkoutSessions: [WorkoutSession] {
+        let cal = Calendar.current
+        return workoutSessions.filter { !$0.isActive && cal.isDate($0.startedAt, inSameDayAs: viewedDate) }
+    }
+
     private var totals: NutritionValues {
         viewedEntries.reduce(NutritionValues.zero) { $0 + $1.totalNutrition }
     }
 
     private var exerciseCaloriesBurned: Int {
-        Int(viewedExercise.reduce(0) { $0 + $1.caloriesBurned })
+        let manualLogs = viewedExercise.reduce(0) { $0 + $1.caloriesBurned }
+        let trackedWorkouts = viewedWorkoutSessions.reduce(0.0) { $0 + $1.totalCaloriesBurned }
+        return Int(manualLogs + trackedWorkouts)
     }
 
     private func entries(for meal: MealType) -> [MealEntry] {

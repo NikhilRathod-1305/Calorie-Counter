@@ -47,8 +47,8 @@ export function ReviewItems({ initialItems, source, method, mealType, day, onBac
       <div className="card">
         {items.length === 0 && <div className="empty">All items removed.</div>}
         {items.map((it, i) => (
-          <div className="list-row" key={i} style={{ flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: 140 }}>
+          <div className="list-row" key={i} style={{ gap: 8 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <input className="input" style={{ minHeight: 36, padding: '4px 8px', border: 'none', background: 'transparent', fontWeight: 600 }} value={it.name} onChange={(e) => update(i, { name: e.target.value })} aria-label="Food name" />
               <div className="tiny faint" style={{ paddingLeft: 8 }}>
                 {Math.round(itemTotal(it).calories)} cal · P {Math.round(itemTotal(it).protein)} · C {Math.round(itemTotal(it).carbs)} · F {Math.round(itemTotal(it).fat)}
@@ -56,7 +56,7 @@ export function ReviewItems({ initialItems, source, method, mealType, day, onBac
             </div>
             <Stepper value={it.servings} onChange={(v) => update(i, { servings: v })} step={it.servingLabel === '100g' ? 0.25 : 0.5}
               format={(v) => (it.servingLabel === '100g' ? `${Math.round(v * 100)}g` : `${v}×`)} />
-            <button className="swipe-del" onClick={() => remove(i)} aria-label={`Remove ${it.name}`}>Remove</button>
+            <button className="del-btn" onClick={() => remove(i)} aria-label={`Remove ${it.name}`}>✕</button>
           </div>
         ))}
       </div>

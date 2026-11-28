@@ -116,7 +116,7 @@ function WeekStrip({ day, onPick }: { day: number; onPick: (d: number) => void }
   const days = Array.from({ length: 7 }, (_, i) => addDays(start, i))
   return (
     <div className="row" style={{ gap: 4 }}>
-      <button className="icon-btn" aria-label="Previous week" onClick={() => onPick(addDays(day, -7))}>‹</button>
+      <button className="icon-btn week-nav" aria-label="Previous week" onClick={() => onPick(addDays(day, -7))}>‹</button>
       <div className="date-strip" style={{ flex: 1 }}>
         {days.map((d) => (
           <button key={d} className="date-cell" aria-pressed={isSameDay(d, day)} onClick={() => onPick(d)}>
@@ -125,7 +125,7 @@ function WeekStrip({ day, onPick }: { day: number; onPick: (d: number) => void }
           </button>
         ))}
       </div>
-      <button className="icon-btn" aria-label="Next week" onClick={() => onPick(addDays(day, 7))}>›</button>
+      <button className="icon-btn week-nav" aria-label="Next week" onClick={() => onPick(addDays(day, 7))}>›</button>
     </div>
   )
 }

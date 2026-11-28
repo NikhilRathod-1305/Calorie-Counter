@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { db, newId } from '../../lib/db'
 import type { Routine, RoutineExercise } from '../../lib/types'
 import { Sheet } from '../../ui/Sheet'
@@ -51,17 +51,17 @@ export function RoutineBuilder({ routine, onClose }: { routine: Routine | null; 
                 <span className="bold" style={{ fontSize: 14, flex: 1 }}>{ex.exerciseName}</span>
                 <button className="icon-btn" style={{ width: 32, height: 32 }} aria-label="Move up" onClick={() => move(i, -1)}>↑</button>
                 <button className="icon-btn" style={{ width: 32, height: 32 }} aria-label="Move down" onClick={() => move(i, 1)}>↓</button>
-                <button className="swipe-del" onClick={() => setExercises((xs) => xs.filter((_, j) => j !== i))}>Remove</button>
+                <button className="del-btn" aria-label={`Remove ${ex.exerciseName}`} onClick={() => setExercises((xs) => xs.filter((_, j) => j !== i))}>✕</button>
               </div>
               {ex.isCardio ? (
-                <div className="grid-2" style={{ flex: 1 }}>
-                  <input className="input" type="number" inputMode="decimal" aria-label="Minutes" placeholder="Minutes" value={ex.targetMinutes ?? ''} onChange={(e) => update(i, { targetMinutes: num(e.target.value) })} />
+                <div className="grid-3" style={{ flex: 1 }}>
+                  <MiniField label="Minutes"><input className="input" type="number" inputMode="decimal" aria-label="Minutes" value={ex.targetMinutes ?? ''} onChange={(e) => update(i, { targetMinutes: num(e.target.value) })} /></MiniField>
                 </div>
               ) : (
                 <div className="grid-3" style={{ flex: 1 }}>
-                  <input className="input" type="number" inputMode="numeric" aria-label="Sets" placeholder="Sets" value={ex.targetSets} onChange={(e) => update(i, { targetSets: Math.max(1, Math.min(20, Number(e.target.value) || 1)) })} />
-                  <input className="input" type="number" inputMode="numeric" aria-label="Reps" placeholder="Reps" value={ex.targetReps ?? ''} onChange={(e) => update(i, { targetReps: num(e.target.value) })} />
-                  <input className="input" type="number" inputMode="decimal" aria-label="Weight kg" placeholder="kg" value={ex.targetWeightKg ?? ''} onChange={(e) => update(i, { targetWeightKg: num(e.target.value) })} />
+                  <MiniField label="Sets"><input className="input" type="number" inputMode="numeric" aria-label="Sets" value={ex.targetSets} onChange={(e) => update(i, { targetSets: Math.max(1, Math.min(20, Number(e.target.value) || 1)) })} /></MiniField>
+                  <MiniField label="Reps"><input className="input" type="number" inputMode="numeric" aria-label="Reps" value={ex.targetReps ?? ''} onChange={(e) => update(i, { targetReps: num(e.target.value) })} /></MiniField>
+                  <MiniField label="kg (optional)"><input className="input" type="number" inputMode="decimal" aria-label="Weight kg" placeholder="–" value={ex.targetWeightKg ?? ''} onChange={(e) => update(i, { targetWeightKg: num(e.target.value) })} /></MiniField>
                 </div>
               )}
             </div>
@@ -81,3 +81,7 @@ export function RoutineBuilder({ routine, onClose }: { routine: Routine | null; 
     </Sheet>
   )
 }
+
+const MiniField = ({ label, children }: { label: string; children: ReactNode }) => (
+  <div className="field" style={{ gap: 4 }}><span className="tiny muted">{label}</span>{children}</div>
+)

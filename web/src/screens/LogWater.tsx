@@ -30,16 +30,16 @@ export function LogWater({ onClose, onSaved }: { onClose: () => void; onSaved: (
           <div style={{ marginTop: 10 }}><ProgressBar value={total} max={profile.waterGoalMl} color="var(--water)" /></div>
         </div>
         <div className="section-label">Drink</div>
-        <div className="grid-3">
+        <div className="drink-grid">
           {(Object.keys(DRINKS) as DrinkType[]).map((d) => (
-            <button key={d} className="chip" style={{ justifyContent: 'center', minHeight: 44 }} aria-pressed={drink === d} onClick={() => setDrink(d)}>
-              <span aria-hidden="true">{DRINKS[d].emoji}</span>{DRINKS[d].label}
+            <button key={d} className="drink" aria-pressed={drink === d} onClick={() => setDrink(d)}>
+              <span className="emoji" aria-hidden="true">{DRINKS[d].emoji}</span>{DRINKS[d].label}
             </button>
           ))}
         </div>
         <div className="section-label">Amount</div>
-        <div className="chips" style={{ flexWrap: 'wrap' }}>
-          {CUP_SIZES.map((s) => <button key={s} className="chip" aria-pressed={ml === s} onClick={() => setMl(s)}>{s} ml</button>)}
+        <div className="grid-3" style={{ gap: 8 }}>
+          {CUP_SIZES.map((s) => <button key={s} className="chip" style={{ justifyContent: 'center' }} aria-pressed={ml === s} onClick={() => setMl(s)}>{s} ml</button>)}
         </div>
         {DRINKS[drink].factor < 1 && <div className="tiny faint">{DRINKS[drink].label} counts {Math.round(DRINKS[drink].factor * 100)}% toward hydration.</div>}
         <ErrorBox message={error} />

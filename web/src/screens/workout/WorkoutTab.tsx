@@ -49,8 +49,8 @@ export function WorkoutTab({ openId, onOpen }: { openId: string | null; onOpen: 
           </button>
         ) : (
           <div className="grid-2">
-            <button className="btn btn-primary" onClick={() => start(null)}>Start empty workout</button>
-            <button className="btn btn-secondary" onClick={() => setVoice(true)}>🎙️ Log by voice</button>
+            <button className="btn btn-primary" onClick={() => start(null)}>Start workout</button>
+            <button className="btn btn-secondary" onClick={() => setVoice(true)}>Log by voice</button>
           </div>
         )}
         <ErrorBox message={error} />

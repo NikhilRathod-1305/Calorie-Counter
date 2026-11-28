@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useProfile } from './hooks'
 import { db, newId } from './lib/db'
 import { ToastProvider } from './ui/controls'
-import { DumbbellIcon, GridIcon, HomeIcon, PersonIcon } from './ui/icons'
+import { DumbbellIcon, GridIcon, HomeIcon, PersonIcon, PlusIcon } from './ui/icons'
 import { Home } from './screens/Home'
 import { Tracker } from './screens/Tracker'
 import { More } from './screens/More'
@@ -67,7 +67,7 @@ function MainTabs() {
       </main>
       <nav className="tabbar" aria-label="Main">
         {TABS.slice(0, 2).map(tabButton)}
-        <button className="fab" aria-label="Quick log" onClick={() => setQuickLog(true)}>+</button>
+        <button className="fab" aria-label="Quick log" onClick={() => setQuickLog(true)}><PlusIcon /></button>
         {TABS.slice(2).map(tabButton)}
       </nav>
       {quickLog && <QuickLog onClose={() => setQuickLog(false)} onStartWorkout={() => void startWorkout()} />}

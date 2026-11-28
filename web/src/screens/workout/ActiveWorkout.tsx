@@ -50,22 +50,25 @@ export function ActiveWorkout({ initial, onClose }: { initial: WorkoutSession; o
   return (
     <Sheet title={session.name} onClose={onClose} full action={<button className="btn btn-primary" style={{ minHeight: 40 }} onClick={finish}>Finish</button>}>
       <div className="stack">
-        <div className="row small muted">
-          <span>⏱ {Math.floor(mins / 60) ? `${Math.floor(mins / 60)}h ` : ''}{mins % 60}m</span>
-          <span>· {session.sets.filter((s) => s.completed).length} sets done</span>
-          <span>· {Math.round(sessionVolumeKg(session))} kg volume</span>
+        <div className="card stat-strip">
+          <div><div className="v">{Math.floor(mins / 60) ? `${Math.floor(mins / 60)}h ` : ''}{mins % 60}m</div><div className="tiny muted">Duration</div></div>
+          <div><div className="v">{session.sets.filter((s) => s.completed).length}</div><div className="tiny muted">Sets done</div></div>
+          <div><div className="v">{Math.round(sessionVolumeKg(session))}</div><div className="tiny muted">kg volume</div></div>
         </div>
-        <input className="input" value={session.name} aria-label="Workout name" onChange={(e) => void persist({ ...session, name: e.target.value })} />
+        <label className="field"><span className="field-label">Workout name</span>
+          <input className="input" value={session.name} onChange={(e) => void persist({ ...session, name: e.target.value })} />
+        </label>
         {exerciseGroups(session.sets).map((g) => (
           <div className="card" key={g.name}>
             <div className="row" style={{ padding: '12px 14px 4px' }}><span className="bold">{g.name}</span></div>
-            <div className="set-row tiny muted"><span>Set</span><span>{g.sets[0].isCardio ? 'Min' : 'kg'}</span><span>{g.sets[0].isCardio ? 'km' : 'Reps'}</span><span /></div>
+            <div className="set-row head tiny muted"><span>Set</span><span>{g.sets[0].isCardio ? 'Minutes' : 'kg'}</span><span>{g.sets[0].isCardio ? 'km' : 'Reps'}</span><span>Done</span><span /></div>
             {g.sets.map((s, i) => (
               <div className="set-row" key={s.id}>
-                <button className="tiny muted" onClick={() => removeSet(s.id)} aria-label={`Delete set ${i + 1}`}>{i + 1} ✕</button>
+                <span className="set-n">{i + 1}</span>
                 <SetInput value={s.isCardio ? s.minutes : s.weightKg} label={s.isCardio ? 'Minutes' : 'Weight in kg'} onChange={(v) => updateSet(s.id, s.isCardio ? { minutes: v } : { weightKg: v })} />
                 <SetInput value={s.isCardio ? s.distanceKm : s.reps} label={s.isCardio ? 'Distance in km' : 'Reps'} onChange={(v) => updateSet(s.id, s.isCardio ? { distanceKm: v } : { reps: v })} />
                 <button className="check" aria-pressed={s.completed} aria-label={`Mark set ${i + 1} done`} onClick={() => updateSet(s.id, { completed: !s.completed })}>✓</button>
+                <button className="del-btn" onClick={() => removeSet(s.id)} aria-label={`Delete set ${i + 1}`}>✕</button>
               </div>
             ))}
             <button className="list-row" style={{ justifyContent: 'center', color: 'var(--accent)', fontWeight: 600 }} onClick={() => addSet(g.name)}>＋ Add set</button>

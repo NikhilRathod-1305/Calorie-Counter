@@ -10,6 +10,8 @@ struct QuickLogSheet: View {
     @State private var activeMode: LogMode?
     @State private var showingWorkout = false
     @State private var showingWater = false
+    @State private var showingWorkoutOptions = false
+    @State private var startedWorkoutSession: WorkoutSession?
 
     private var profile: UserProfile { profiles.first ?? UserProfile() }
 
@@ -22,10 +24,15 @@ struct QuickLogSheet: View {
                     emojiTile(emoji: "🎙️", label: "Voice Log", color: Theme.secondary) { activeMode = .voice }
                     emojiTile(emoji: "📸", label: "Scan Meal", color: Theme.secondary) { activeMode = .scan }
                     emojiTile(emoji: "💧", label: "Water", color: Theme.water) { showingWater = true }
-                    emojiTile(emoji: "🏃", label: "Workout", color: Theme.exercise) { showingWorkout = true }
+                    emojiTile(emoji: "🏃", label: "Workout", color: Theme.exercise) { showingWorkoutOptions = true }
                 }
             }
             .padding(.bottom, 8)
+        }
+        .confirmationDialog("Log a Workout", isPresented: $showingWorkoutOptions, titleVisibility: .visible) {
+            Button("Start Workout") { startWorkout() }
+            Button("Quick Log Calories Burned") { showingWorkout = true }
+            Button("Cancel", role: .cancel) {}
         }
         .fullScreenCover(item: $activeMode) { mode in
             LogFoodSheet(
@@ -65,6 +72,19 @@ struct QuickLogSheet: View {
                 }
             )
         }
+        .fullScreenCover(item: $startedWorkoutSession) { session in
+            ActiveWorkoutView(session: session, onEnd: {
+                startedWorkoutSession = nil
+                onAdded()
+            })
+        }
+    }
+
+    private func startWorkout() {
+        let session = WorkoutSession(name: "Workout")
+        modelContext.insert(session)
+        try? modelContext.save()
+        startedWorkoutSession = session
     }
 
     private func tile(icon: String, label: String, color: Color, action: @escaping () -> Void) -> some View {

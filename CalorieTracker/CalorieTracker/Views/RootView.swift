@@ -35,12 +35,13 @@ struct RootView: View {
 }
 
 private enum RootTab: String, CaseIterable {
-    case home, tracker, progress, more, add
+    case home, tracker, workout, progress, more, add
 
     var label: String {
         switch self {
         case .home: return "Home"
         case .tracker: return "Tracker"
+        case .workout: return "Workout"
         case .progress: return "Progress"
         case .more: return "More"
         case .add: return "Add"
@@ -51,6 +52,7 @@ private enum RootTab: String, CaseIterable {
         switch self {
         case .home: return "house"
         case .tracker: return "square.grid.2x2"
+        case .workout: return "figure.strengthtraining.traditional"
         case .progress: return "chart.line.uptrend.xyaxis"
         case .more: return "person"
         case .add: return "plus"
@@ -71,6 +73,9 @@ private struct MainTabView: View {
             }
             Tab(RootTab.tracker.label, systemImage: RootTab.tracker.icon, value: .tracker) {
                 TrackerPlaceholderView()
+            }
+            Tab(RootTab.workout.label, systemImage: RootTab.workout.icon, value: .workout) {
+                WorkoutTabView()
             }
             Tab(RootTab.progress.label, systemImage: RootTab.progress.icon, value: .progress) {
                 ProgressTabView()
